@@ -30,6 +30,16 @@ import java.util.Random;
 public class ApkModel implements Serializable {
     private static final long serialVersionUID = 2072893447591548402L;
 
+    public String verName;
+
+    public String getVerName() {
+        return verName;
+    }
+
+    public void setVerName(String verName) {
+        this.verName = verName;
+    }
+
     public String name;
 
     public String getName() {

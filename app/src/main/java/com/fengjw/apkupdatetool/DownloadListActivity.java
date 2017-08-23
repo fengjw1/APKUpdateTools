@@ -83,7 +83,6 @@ public class DownloadListActivity extends BaseActivity {
 
     private List<ApkModel> apks; //类型是ApkModel
     private DownloadListAdapter adapter;
-    //private List<ApkModel> mApkModels ;
 
     private Handler handler = new Handler(){
         @Override
@@ -112,7 +111,6 @@ public class DownloadListActivity extends BaseActivity {
 //                    recyclerView.setFocusableInTouchMode(true);
 //                    recyclerView.requestFocus();
                     adapter = new DownloadListAdapter(DownloadListActivity.this, apks);
-//                    //listView.setAdapter(adapter);
                     recyclerView.setAdapter(adapter);
 //                    runOnUiThread(new Runnable() {
 //                        @Override
@@ -211,7 +209,7 @@ public class DownloadListActivity extends BaseActivity {
         new Thread(new Runnable() {
             @Override
             public void run() {
-                http();
+                sendRequestWithOKHttp();
             }
         }).start();
     }
@@ -242,10 +240,6 @@ public class DownloadListActivity extends BaseActivity {
         }
     }
 
-    private void http(){
-        sendRequestWithOKHttp();
-    }
-
     private void sendRequestWithOKHttp(){
 //        new Thread(new Runnable() {
 //            @Override
@@ -269,11 +263,7 @@ public class DownloadListActivity extends BaseActivity {
 //        }).start();
         String url = "http://192.168.1.14:2700/6a648/ktc/test/version.json";
         //String url = "https://10.0.2.2/get_data.json";
-
         apks = new ArrayList<>();
-
-
-
         Log.d(TGA, url);
         HttpUtil.sendOKHttpResquest(url, new okhttp3.Callback(){
             @Override
@@ -285,23 +275,17 @@ public class DownloadListActivity extends BaseActivity {
             public void onResponse(Call call, Response response) throws IOException {
 
                 if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
-
-                String responseData = response.body().string();
-                Log.d(TGA, responseData);
-                parseNewJSONWithJSONObject(responseData);
-                //parseTestJSONWithJSONObject(responseData);
+                    String responseData = response.body().string();
+                    Log.d(TGA, responseData);
+                    parseNewJSONWithJSONObject(responseData);
+                    //parseTestJSONWithJSONObject(responseData);
             }
         });
     }
 
     private void parseTestJSONWithJSONObject(String responseData){
-
-        //int count = 0;
-        //
-        //mApkModels = new ArrayList<>();
         Gson gson = new Gson();
         List<AppInfo> appList = gson.fromJson(responseData, new TypeToken<List<AppInfo>>(){}.getType());
-        //List<HeadBean.ApklistBean> appList = bean.getApklist();
 
         for (AppInfo app : appList){ //foreach()
             Log.d(TGA, "appName : " + app.getApp_name());
@@ -366,8 +350,6 @@ public class DownloadListActivity extends BaseActivity {
                     //判断是否更新
                     if (httpAppPkgName.equals(AppInfoPkgName)) {
                         if (httpAppverCode > AppInfoverCode) {
-                            //Intent intent
-                            //urls.add(app.getApk_url());
                             String name =  app.getApp_name();
                             String url = app.getUrl();
                             //String iconUrl = app.get();
@@ -407,10 +389,6 @@ public class DownloadListActivity extends BaseActivity {
         handler.sendEmptyMessage(GET_ALL_APP_FINISH);
     }
     private void parseNewJSONWithJSONObject(String responseData){
-
-        //int count = 0;
-        //
-        //mApkModels = new ArrayList<>();
         Gson gson = new Gson();
         HeadBean bean = gson.fromJson(responseData, HeadBean.class);
         List<HeadBean.ApklistBean> appList = bean.getApklist();
@@ -427,18 +405,6 @@ public class DownloadListActivity extends BaseActivity {
             Log.d(TGA, "Introduction : " + app.getIntroduction());
             Log.d(TGA, "-----------------------------------------");
         }
-//        Log.d(TGA, gson.toString());
-//        List<AppInfo> appList = gson.fromJson(responseData, new TypeToken<List<AppInfo>>(){}.getType());
-//        for (AppInfo app : appList){ //foreach()
-//            Log.d(TGA, "appName : " + app.getApp_name());
-//            Log.d(TGA, "fileName : " + app.getFile_name());
-//            Log.d(TGA, "verName : " + app.getVer_name());
-//            Log.d(TGA, "verCode : " + app.getVerCode());
-//            Log.d(TGA, "url : " + app.getUrl());
-//            Log.d(TGA, "MD5 : " + app.getMD5());
-//            Log.d(TGA, "packageName : " + app.getPkg_name());
-//            Log.d(TGA, "-----------------------------------------");
-//        }
 
         //本地信息
         AppInfoProvider appInfoProvider = new AppInfoProvider(this);
@@ -482,13 +448,12 @@ public class DownloadListActivity extends BaseActivity {
                     //判断是否更新
                     if (httpAppPkgName.equals(AppInfoPkgName)) {
                         if (httpAppverCode > AppInfoverCode) {
-                            //Intent intent
-                            //urls.add(app.getApk_url());
                             String name =  app.getApp_name();
                             String url = app.getApk_url();
                             String iconUrl = app.getPic_url();
                             String description = app.getIntroduction();
                             int type = app.getUpdate_type();
+                            String verName = app.getVer_name() + app.getVer_code();
                             Log.d(TGA, "name = " + name);
                             Log.d(TGA, "url = " + url);
                             Log.d(TGA, "verCode = " + app.getVer_code());
@@ -498,15 +463,14 @@ public class DownloadListActivity extends BaseActivity {
                             apkModel.url = url;
 //                            apkModel.iconUrl = "http://file.market.xiaomi.com/thumbnail/" +
 //                                    "PNG/l114/AppStore/0c10c4c0155c9adf1282af008ed329378d54112ac";
+                            apkModel.verName = verName;
                             apkModel.iconUrl = iconUrl;
                             apkModel.priority = type;
                             apkModel.description = description;
                             Log.d(TGA, "apkModel.url = " + apkModel.url);
                             apks.add(apkModel);
-                            //count++;
-//                            Log.d(TGA, "httpAppPkgName : " + httpAppPkgName + " httpAppverCode : "
-//                                    + httpAppverCode + " count = " + count);
                         }
+
                     }
 //                    else {
 //                        Log.d(TGA, "httpAppPkgName : " + httpAppPkgName + " is not equal " + AppInfoPkgName);
@@ -518,12 +482,21 @@ public class DownloadListActivity extends BaseActivity {
         }
 
         //test url
-        for (ApkModel apk : apks){
-            Log.d(TGA, "apk url = " + apk.url);
-        }
-        Log.d(TGA, "这里之后呢？");
+//        for (ApkModel apk : apks){
+//            Log.d(TGA, "apk url = " + apk.url);
+//        }
+//        Log.d(TGA, "这里之后呢？");
         //initData();
         //发送消息，进行异步加载
+
+//        List<HeadBean.ApklistBean> tempList = new ArrayList<>();
+//
+//        for (HeadBean.ApklistBean app : appList){
+//            for (ApkModel apkModel : apks){
+//                if (apkModel.getName().equals(app.getApp_name()))
+//            }
+//        }
+
         handler.sendEmptyMessage(GET_ALL_APP_FINISH);
     }
 
@@ -547,10 +520,10 @@ public class DownloadListActivity extends BaseActivity {
                     .register(new LogDownloadListener())//
                     .start();
             adapter.notifyDataSetChanged();
-
-            Intent intent2 = new Intent(DownloadListActivity.this, DownloadAllActivity.class);
-            startActivity(intent2);
         }
+        //jump
+        Intent intent2 = new Intent(DownloadListActivity.this, DownloadAllActivity.class);
+        startActivity(intent2);
     }
 
     @Override
@@ -614,6 +587,8 @@ public class DownloadListActivity extends BaseActivity {
         Button download;
         @Bind(R.id.description)
         TextView description;
+        @Bind(R.id.verName)
+        TextView vername;
 
         private ApkModel apk;
 
@@ -635,6 +610,7 @@ public class DownloadListActivity extends BaseActivity {
             name.setText(apk.name);
             description.setText(apk.description);
             displayImage(apk.iconUrl, icon);
+            vername.setText(apk.verName);
             itemView.setOnClickListener(this);
         }
 

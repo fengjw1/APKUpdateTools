@@ -31,7 +31,7 @@
                   android:theme="@style/AppTheme.NoActionBar"/>
 
         <activity android:name=".DownloadAllActivity"
-                  android:theme="@style/AppTheme.NoActionBar"
+                  android:theme="@style/AppTheme"
                   android:launchMode="singleInstance"/>
 
     </application>

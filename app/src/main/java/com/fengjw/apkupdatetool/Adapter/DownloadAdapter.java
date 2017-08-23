@@ -196,7 +196,7 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
                     break;
                 case Progress.FINISH:
                     netSpeed.setText("下载完成");
-                    download.setText("完成");
+                    download.setText("安装");
                     break;
                 case Progress.LOADING:
                     String speed = Formatter.formatFileSize(context, progress.speed);
@@ -222,11 +222,12 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
                     task.pause();
                     break;
                 case Progress.FINISH:
-                    if (ApkUtils.isAvailable(context, new File(progress.filePath))) {
-                        ApkUtils.uninstall(context, ApkUtils.getPackageName(context, progress.filePath));
-                    } else {
-                        ApkUtils.install(context, new File(progress.filePath));
-                    }
+//                    if (ApkUtils.isAvailable(context, new File(progress.filePath))) {
+//                        ApkUtils.uninstall(context, ApkUtils.getPackageName(context, progress.filePath));
+//                    } else {
+//                        ApkUtils.install(context, new File(progress.filePath));
+//                    }
+                    ApkUtils.install(context, new File(progress.filePath));
                     break;
             }
             refresh(progress);
