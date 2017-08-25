@@ -19,8 +19,12 @@
     <string name="simple_view_behavior">com.lzy.demo.ui.SimpleViewBehavior</string>
     <string name="translate_up_down_behavior">com.lzy.demo.ui.TranslateUpDownBehavior</string>
 
+    <!-- service -->
+    <string name="network_noconnection">当前未连接网络</string>
+    <string name="network_connection">当前已连接网络</string>
     <!--add-->
     <drawable name="normal">#ff6501</drawable>
     <drawable name="pressed">#a44100</drawable>
+
 
 </resources>

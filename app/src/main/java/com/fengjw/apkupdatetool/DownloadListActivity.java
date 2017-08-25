@@ -212,6 +212,14 @@ public class DownloadListActivity extends BaseActivity {
                 sendRequestWithOKHttp();
             }
         }).start();
+
+
+//        NetworkGetReceiver networkGetReceiver = new NetworkGetReceiver();
+//        IntentFilter filter = new IntentFilter();
+//        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
+//        registerReceiver(networkGetReceiver, filter);
+//        Log.d(TGA, "这里执行了Receiver");
+
     }
 
 //    @Override
@@ -389,6 +397,8 @@ public class DownloadListActivity extends BaseActivity {
         handler.sendEmptyMessage(GET_ALL_APP_FINISH);
     }
     private void parseNewJSONWithJSONObject(String responseData){
+
+        try {
         Gson gson = new Gson();
         HeadBean bean = gson.fromJson(responseData, HeadBean.class);
         List<HeadBean.ApklistBean> appList = bean.getApklist();
@@ -423,7 +433,6 @@ public class DownloadListActivity extends BaseActivity {
         Log.d(TGA, "-----------------------------------------");
         Log.d(TGA, "-----------------------------------------");
         Log.d(TGA, "-----------------------------------------");
-        try{
             for (HeadBean.ApklistBean app : appList){
                 for (AppInfo appInfo : appInfoList){
                     //http
