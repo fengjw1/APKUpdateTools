@@ -28,11 +28,8 @@ public class NetworkStateReceiver extends BroadcastReceiver {
             if (wifiInfo.isConnected() || activeInfo.isConnected()){
                 Toast.makeText(mContext, "get Network!", Toast.LENGTH_SHORT).show();
                 //test
-                Intent intent1 = new Intent(mContext, DownloadListActivity.class);
-                intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                mContext.startActivity(intent1);
                 Log.d(TGA, "NetworkStateReceiver");
-                Intent stService = new Intent(context, NetworkStateService.class);
+                Intent stService = new Intent(context, NetworkGetService.class);
                 mContext.startService(stService);
                 Log.d(TGA, "get Network!");
             }else {
