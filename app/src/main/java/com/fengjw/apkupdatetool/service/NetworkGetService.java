@@ -12,7 +12,7 @@ import com.fengjw.apkupdatetool.DownloadListActivity;
 public class NetworkGetService extends Service {
 
     private static final String TGA = "NetworkGetService";
-
+    private static final String Test = "";
     public NetworkGetService() {
     }
 
