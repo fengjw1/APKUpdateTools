@@ -8,8 +8,6 @@ import android.net.NetworkInfo;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.fengjw.apkupdatetool.DownloadListActivity;
-
 /**
  * Created by fengjw on 2017/8/24.
  */

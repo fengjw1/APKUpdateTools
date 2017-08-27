@@ -45,6 +45,7 @@ public class DownloadAllActivity extends BaseActivity implements XExecutor.OnAll
        //initToolBar(toolbar, true, "所有任务");
 
         okDownload = OkDownload.getInstance();
+        //okDownload.removeAll(true);
         adapter = new DownloadAdapter(this);
         adapter.updateData(DownloadAdapter.TYPE_ALL);
         //recyclerView.setFocusableInTouchMode(true);
@@ -53,7 +54,6 @@ public class DownloadAllActivity extends BaseActivity implements XExecutor.OnAll
         recyclerView.setAdapter(adapter);
 
         okDownload.addOnAllTaskEndListener(this);
-
 
     }
 
@@ -92,7 +92,8 @@ public class DownloadAllActivity extends BaseActivity implements XExecutor.OnAll
 
     @OnClick(R.id.removeAll)
     public void removeAll(View view) {
-        okDownload.removeAll();
+        //okDownload.removeAll();
+        okDownload.removeAll(true);
         adapter.updateData(DownloadAdapter.TYPE_ALL);
         adapter.notifyDataSetChanged();
     }
