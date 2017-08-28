@@ -25,7 +25,7 @@
         android:id="@+id/fileDownload"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="开始下载"
+        android:text="@string/start_download"
         android:textAllCaps="false"/>
 
     <RelativeLayout
@@ -38,7 +38,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_centerVertical="true"
-            android:text="--M/--M"
+            android:text="@string/speed"
             android:textSize="10sp"/>
 
         <TextView
@@ -48,7 +48,7 @@
             android:layout_alignParentRight="true"
             android:layout_centerVertical="true"
             android:layout_marginRight="10dp"
-            android:text="---K/s"
+            android:text="@string/speeds"
             android:textSize="10sp"/>
 
         <TextView
@@ -57,7 +57,7 @@
             android:layout_height="wrap_content"
             android:layout_centerHorizontal="true"
             android:layout_centerVertical="true"
-            android:text="--.--%"
+            android:text="@string/progress"
             android:textSize="10sp"/>
 
     </RelativeLayout>

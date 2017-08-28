@@ -44,7 +44,7 @@
             android:layout_marginRight="10dp"
             android:layout_marginLeft="10dp"
             android:background="@drawable/button"
-            android:text="删除所有"
+            android:text="@string/delete_all"
             android:textColor="#fff"/>
 
         <Button
@@ -54,7 +54,7 @@
             android:layout_weight="1"
             android:layout_marginRight="10dp"
             android:background="@drawable/button"
-            android:text="暂停所有"
+            android:text="@string/stop_all"
             android:textColor="#fff"/>
 
         <Button
@@ -64,7 +64,7 @@
             android:layout_weight="1"
             android:layout_marginRight="10dp"
             android:background="@drawable/button"
-            android:text="开始所有"
+            android:text="@string/start_all"
             android:textColor="#fff"/>
     </LinearLayout>
 

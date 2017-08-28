@@ -228,6 +228,7 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
 //                        ApkUtils.install(context, new File(progress.filePath));
 //                    }
                     ApkUtils.install(context, new File(progress.filePath));
+                    Log.d(TGA, "apkUrl : " + progress.filePath);
                     break;
             }
             refresh(progress);

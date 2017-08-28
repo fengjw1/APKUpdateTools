@@ -18,11 +18,16 @@ package com.fengjw.apkupdatetool;
 import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.IPackageInstallObserver;
+import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
+import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.IBinder;
 import android.os.Message;
+import android.os.RemoteException;
 import android.support.annotation.NonNull;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.widget.DefaultItemAnimator;
@@ -35,6 +40,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.fengjw.apkupdatetool.Adapter.BaseRecyclerAdapter;
 import com.fengjw.apkupdatetool.utils.ApkModel;
@@ -51,8 +57,13 @@ import com.lzy.okgo.model.Progress;
 import com.lzy.okgo.request.GetRequest;
 import com.lzy.okserver.OkDownload;
 
+import java.io.BufferedReader;
+import java.io.DataOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.lang.reflect.Method;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -67,6 +78,9 @@ public class DownloadListActivity extends BaseActivity {
     private static final int GET_ALL_APP_FINISH = 1;
 
     private static final int REQUEST_PERMISSION_STORAGE = 0x01;
+
+    private final int INSTALL_REPLACE_EXISTING = 2;
+    private final  String sdPath = Environment.getExternalStorageDirectory().getAbsolutePath();
 
     private List<String> urls = new ArrayList<>();
 
@@ -147,8 +161,11 @@ public class DownloadListActivity extends BaseActivity {
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                Intent intent = new Intent(DownloadListActivity.this, MainActivity.class);
-                startActivity(intent);
+//                Intent intent = new Intent(DownloadListActivity.this, MainActivity.class);
+//                startActivity(intent);
+                installPackage();
+               /// String apkPath = "/storage/emulated/0/Download/com.qiyi.video.apk";
+                //install(apkPath);
                 Log.d(TGA, " inter StartOnBootService");
             }
         });
@@ -198,6 +215,8 @@ public class DownloadListActivity extends BaseActivity {
             adapter = new DownloadListAdapter(this);
             Log.d(TGA, "DownloadListAdapter");
             recyclerView.setAdapter(adapter);
+
+
 
             checkSDCardPermission();
         }catch (Exception e){
@@ -739,4 +758,100 @@ public class DownloadListActivity extends BaseActivity {
         apk15.url = "http://60.28.125.129/f5.market.mi-img.com/download/AppStore/02d9c4035b248753314f46600cf7347a306426dc1/com.shuqi.controller.apk";
         apks.add(apk15);
     }
+
+    public void installPackage()
+    {
+        String apkName = "zuoyebang";
+        PackageInstallObserver installObserver = new PackageInstallObserver();
+        try {
+            //String apkPath = sdPath.concat("/").concat(apkName).concat(".apk");
+            String apkPath = "/storage/emulated/0/Download/com.tencent.mm.apk";
+            //ApkUtils.install(this, new File(apkPath));
+            Log.d(TGA, "apkPath = " + apkPath);
+            Class<?> ServiceManager = Class.forName("android.os.ServiceManager");
+            Method getService = ServiceManager.getDeclaredMethod("getService", String.class);
+            getService.setAccessible(true);
+            IBinder packAgeBinder = (IBinder) getService.invoke(null, "package");
+            IPackageManager iPm = IPackageManager.Stub.asInterface(packAgeBinder);
+            try {
+                iPm.installPackage(Uri.fromFile(new File(apkPath)), installObserver,INSTALL_REPLACE_EXISTING,
+                        "com.tencent.mm");
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }catch (Exception e) {
+            e.printStackTrace();
+            Log.d("panzq", "安装失败1");
+            try {
+                installObserver.packageInstalled(null, -1);
+                Log.d("panzq", "安装失败2");
+            } catch (RemoteException ignore) {
+                Log.d("panzq", "安装失败3");
+            }
+        }
+    }
+
+    public class PackageInstallObserver extends IPackageInstallObserver.Stub {
+
+        @Override
+        public void packageInstalled(String packageName, int returnCode) throws RemoteException {
+            if (returnCode == 1) //返回1表示安装成功，否则安装失败
+            {
+                Toast.makeText(DownloadListActivity.this, "安装成功！", Toast.LENGTH_SHORT).show();
+                Log.e("panzq", "packageName=" + packageName + ",returnCode=" + returnCode);
+            } else {
+                Toast.makeText(DownloadListActivity.this, "安装失败！", Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
+
+    public boolean install(String apkPath) {
+        boolean result = false;
+        DataOutputStream dataOutputStream = null;
+        BufferedReader errorStream = null;
+        try {
+            // 申请su权限
+            Process process = Runtime.getRuntime().exec("su");
+            dataOutputStream = new DataOutputStream(process.getOutputStream());
+            // 执行pm install命令
+            String command = " mount -o remount,rw /system\rpm install -r " + apkPath + "\r";
+            dataOutputStream.write(command.getBytes(Charset.forName("utf-8")));
+            dataOutputStream.flush();
+            dataOutputStream.writeBytes("exit\n");
+            dataOutputStream.flush();
+            process.waitFor();
+            errorStream = new BufferedReader(new InputStreamReader(process.getErrorStream()));
+            String msg = "";
+            String line;
+            // 读取命令的执行结果
+            while ((line = errorStream.readLine()) != null) {
+                msg += line;
+            }
+            Log.d("TAG", "install msg is " + msg);
+            Toast.makeText(this,"msg:" + msg, Toast.LENGTH_SHORT).show();
+
+            // 如果执行结果中包含Failure字样就认为是安装失败，否则就认为安装成功
+            if (!msg.contains("Failure")) {
+                Toast.makeText(this, "成功！", Toast.LENGTH_SHORT).show();
+                result = true;
+            }
+        } catch (Exception e) {
+            Toast.makeText(this, "Exception", Toast.LENGTH_SHORT).show();
+            Log.e(TGA, e.getMessage(), e);
+        } finally {
+            try {
+                if (dataOutputStream != null) {
+                    dataOutputStream.close();
+                }
+                if (errorStream != null) {
+                    errorStream.close();
+                }
+            } catch (IOException e) {
+                Log.e(TGA, e.getMessage(), e);
+            }
+        }
+        return result;
+    }
+
 }
+

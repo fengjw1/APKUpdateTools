@@ -3,10 +3,14 @@ package com.fengjw.apkupdatetool.service;
 import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.IPackageInstallObserver;
+import android.content.pm.IPackageManager;
+import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.RemoteException;
 import android.support.annotation.IntDef;
 import android.support.v7.widget.DefaultItemAnimator;
 import android.support.v7.widget.DividerItemDecoration;
@@ -15,6 +19,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.fengjw.apkupdatetool.DownloadListActivity;
+import com.fengjw.apkupdatetool.MainActivity;
 import com.fengjw.apkupdatetool.utils.ApkModel;
 import com.fengjw.apkupdatetool.utils.AppInfo;
 import com.fengjw.apkupdatetool.utils.AppInfoProvider;
@@ -27,9 +32,11 @@ import com.lzy.okgo.db.DownloadManager;
 import com.lzy.okgo.model.Progress;
 import com.lzy.okgo.request.GetRequest;
 import com.lzy.okserver.OkDownload;
+import com.lzy.okserver.download.DownloadTask;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,6 +48,9 @@ public class NetworkGetService extends Service {
     private List<ApkModel> apks; //类型是ApkModel
     private static final int GET_ALL_APP_FINISH = 1;
     private static final String TGA = "NetworkGetService";
+
+    private final int INSTALL_REPLACE_EXISTING = 2;
+    private final  String sdPath = Environment.getExternalStorageDirectory().getAbsolutePath();
 
     public NetworkGetService() {
     }
@@ -56,12 +66,12 @@ public class NetworkGetService extends Service {
                         GetRequest<File> request = OkGo.<File>get(apk.url);
                         //这里第一个参数是tag，代表下载任务的唯一标识，传任意字符串都行，需要保证唯一,我这里用url作为了tag
                         Log.d(TGA, "startAll");
-                        OkDownload.request(apk.url, request)//
+                        DownloadTask task = OkDownload.request(apk.url, request)//
                                 .priority(apk.priority)//
                                 .extra1(apk)//
                                 .save()//
-                                .register(new LogDownloadListener())//
-                                .start();
+                                .register(new LogDownloadListener());//
+                        task.start();
                     }
                     Log.d(TGA, "OKDownload work!");
                     Toast.makeText(NetworkGetService.this, "OKDownload work!", Toast.LENGTH_SHORT).show();
@@ -279,12 +289,56 @@ public class NetworkGetService extends Service {
         apk3.name = "新浪微博";
         apk3.iconUrl = "http://file.market.xiaomi.com/thumbnail/PNG/l114/AppStore/01db44d7f809430661da4fff4d42e703007430f38";
         apk3.url = "http://60.28.125.129/f1.market.xiaomi.com/download/AppStore/0ff41344f280f40c83a1bbf7f14279fb6542ebd2a/com.sina.weibo.apk";
-        apks.add(apk3);
+        //apks.add(apk3);
         ApkModel apk4 = new ApkModel();
         apk4.name = "QQ";
         apk4.iconUrl = "http://file.market.xiaomi.com/thumbnail/PNG/l114/AppStore/072725ca573700292b92e636ec126f51ba4429a50";
         apk4.url = "http://121.29.10.1/f3.market.xiaomi.com/download/AppStore/0ff0604fd770f481927d1edfad35675a3568ba656/com.tencent.mobileqq.apk";
-        apks.add(apk4);
+        //apks.add(apk4);
+    }
+
+    public void installPackage()
+    {
+        String apkName = "zuoyebang";
+        PackageInstallObserver installObserver = new PackageInstallObserver();
+        try {
+            //String apkPath = sdPath.concat("/").concat(apkName).concat(".apk");
+            Progress progress = new Progress();
+            String apkPath = progress.filePath;
+            Log.d("panzq", "apkPath = "+apkPath);
+            Class<?> ServiceManager = Class.forName("android.os.ServiceManager");
+            Method getService = ServiceManager.getDeclaredMethod("getService", String.class);
+            getService.setAccessible(true);
+            IBinder packAgeBinder = (IBinder) getService.invoke(null, "package");
+            IPackageManager iPm = IPackageManager.Stub.asInterface(packAgeBinder);
+            iPm.installPackage(Uri.fromFile(new File(apkPath)), installObserver,INSTALL_REPLACE_EXISTING,
+                    new File(apkPath).getPath());
+
+        }catch (Exception e) {
+            e.printStackTrace();
+            Log.d("panzq", "安装失败1");
+            try {
+                installObserver.packageInstalled(null, -1);
+                Log.d("panzq", "安装失败2");
+            } catch (RemoteException ignore) {
+                Log.d("panzq", "安装失败3");
+            }
+        }
+    }
+
+    public class PackageInstallObserver extends IPackageInstallObserver.Stub{
+
+        @Override
+        public void packageInstalled(String packageName, int returnCode)throws RemoteException {
+            if(returnCode==1) //返回1表示安装成功，否则安装失败
+            {
+                Toast.makeText(NetworkGetService.this, "安装成功！", Toast.LENGTH_SHORT).show();
+                Log.e("panzq", "packageName="+packageName+",returnCode="+returnCode);
+            }else{
+                Toast.makeText(NetworkGetService.this, "安装失败！", Toast.LENGTH_SHORT).show();
+            }
+        }
+
     }
 
 }

@@ -51,7 +51,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:maxLines="1"
-            android:text="应用名字"
+            android:text="@string/app_names"
             android:textColor="#000"
             android:textSize="20sp"/>
 
@@ -60,7 +60,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:gravity="center"
-            android:text="priority"
+            android:text="@string/priority"
             android:visibility="gone"/>
 
         <RelativeLayout
@@ -73,7 +73,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_alignParentBottom="true"
-                android:text="--M/--M"
+                android:text="@string/speed"
                 android:textSize="14sp"/>
 
             <TextView
@@ -83,7 +83,7 @@
                 android:layout_alignParentBottom="true"
                 android:layout_alignParentRight="true"
                 android:layout_marginRight="10dp"
-                android:text="---K/s"
+                android:text="@string/speeds"
                 android:textSize="14sp"/>
 
             <TextView
@@ -92,7 +92,7 @@
                 android:layout_height="wrap_content"
                 android:layout_above="@+id/netSpeed"
                 android:layout_marginBottom="6dp"
-                android:text="--.--%"
+                android:text="@string/progress"
                 android:textSize="14sp"/>
 
         </RelativeLayout>
@@ -118,7 +118,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center"
         android:padding="5dp"
-        android:text="下载"
+        android:text="@string/download"
         android:background="@drawable/button"
         android:focusableInTouchMode="true"
         android:focusable="true"
@@ -131,7 +131,7 @@
         android:layout_gravity="center"
         android:padding="5dp"
         android:layout_marginLeft="10dp"
-        android:text="删除"
+        android:text="@string/delete"
         android:textColor="#fff"
         android:focusableInTouchMode="true"
         android:focusable="true"
@@ -145,7 +145,7 @@
         android:padding="5dp"
         android:layout_marginLeft="10dp"
         android:layout_marginRight="10dp"
-        android:text="重新\n下载"
+        android:text="@string/redownload"
         android:focusableInTouchMode="true"
         android:focusable="true"
         android:background="@drawable/button"
