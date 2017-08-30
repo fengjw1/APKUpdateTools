@@ -165,7 +165,7 @@ public class DownloadListActivity extends BaseActivity {
             public void onClick(View view) {
 //                Intent intent = new Intent(DownloadListActivity.this, MainActivity.class);
 //                startActivity(intent);
-                installPackage();
+                //installPackage();
                /// String apkPath = "/storage/emulated/0/Download/com.qiyi.video.apk";
                 //install(apkPath);
                 Log.d(TGA, " inter StartOnBootService");

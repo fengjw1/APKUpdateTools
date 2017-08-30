@@ -53,16 +53,17 @@ public class NetworkGetService extends Service {
     private List<ApkModel> apks; //类型是ApkModel
     private static final int GET_ALL_APP_FINISH = 1;
     private static final String TGA = "NetworkGetService";
-    private static List<ApkPath> apkPaths;
+    //private static List<ApkPath> apkPaths;
     private final int INSTALL_REPLACE_EXISTING = 2;
-    private final  String sdPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+    //private final  String sdPath = Environment.getExternalStorageDirectory().getAbsolutePath();
     public NetworkGetService() {
     }
 
     private Handler handler = new Handler(){
+        private int i = 1;
         @Override
         public void handleMessage(Message msg) {
-            apkPaths = new ArrayList<>();
+            //apkPaths = new ArrayList<>();
             switch (msg.what){
                 case GET_ALL_APP_FINISH:
                     Log.d(TGA, "这里是handler");
@@ -89,7 +90,8 @@ public class NetworkGetService extends Service {
 //                        apkPath1.apkpath = apkPath;
 //                        apkPath1.apkState = apkState;
 //                        apkPaths.add(apkPath1);
-                        //task.remove(true);
+                        //task.remove(true);                                L
+                        Log.d(TGA, "apk 循环次数 " + i++);
                     }
                     Log.d(TGA, "OKDownload work!");
                     Toast.makeText(NetworkGetService.this, "OKDownload work!", Toast.LENGTH_SHORT).show();
@@ -104,6 +106,7 @@ public class NetworkGetService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d(TGA, "onCreate");
+        Toast.makeText(this, "onCreate", Toast.LENGTH_SHORT).show();//这里只启动一次
         OkDownload.getInstance().setFolder(
                 Environment.getExternalStoragePublicDirectory(
                         Environment.DIRECTORY_DOWNLOADS).getPath());
@@ -111,14 +114,14 @@ public class NetworkGetService extends Service {
                 Environment.DIRECTORY_DOWNLOADS).getPath();
         Log.d(TGA, path);
         OkDownload.getInstance().getThreadPool().setCorePoolSize(3);
-        Toast.makeText(this, "onCreate", Toast.LENGTH_SHORT).show();//这里只启动一次
+        init();
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TGA, "onStartCommand");
         Toast.makeText(this, "onStartCommand", Toast.LENGTH_SHORT).show();
-        init();
+        //init();
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -126,6 +129,7 @@ public class NetworkGetService extends Service {
     public void onDestroy() {
         Log.d(TGA, "onDestroy");
         super.onDestroy();
+
     }
 
     @Override
@@ -135,13 +139,14 @@ public class NetworkGetService extends Service {
     }
 
     private void init(){
+        Log.d(TGA, "init() is work!");
         //从数据库中回复数据
         List<Progress> progressList = DownloadManager.getInstance().getAll();
         OkDownload.restore(progressList);
         new Thread(new Runnable() {
             @Override
             public void run() {
-                Log.d(TGA, "Thread");
+                Log.d(TGA, "Thread now!");
                 sendRequestWithOKHttp();
             }
         }).start();
@@ -149,6 +154,7 @@ public class NetworkGetService extends Service {
     }
 
     private void sendRequestWithOKHttp(){
+        Log.d(TGA, "sendRequestWithOKHttp() now!");
         String url = "http://192.168.1.14:2700/6a648/ktc/test/version.json";
         apks = new ArrayList<>();
         Log.d(TGA, "sendRequestWithOKHttp");
@@ -172,7 +178,7 @@ public class NetworkGetService extends Service {
     }
 
     private void parseNewJSONWithJSONObject(String responseData){
-
+        Log.d(TGA, "parseNewJSONWithJSONObject() now!");
         try {
             Gson gson = new Gson();
             HeadBean bean = gson.fromJson(responseData, HeadBean.class);
@@ -289,7 +295,7 @@ public class NetworkGetService extends Service {
     }
 
     private void initData() {
-        Log.d(TGA, "initData");
+        Log.d(TGA, "initData now!");
         apks = new ArrayList<>();
         ApkModel apk1 = new ApkModel();
         apk1.name = "爱奇艺";
@@ -320,7 +326,6 @@ public class NetworkGetService extends Service {
         try {
             //String apkPath = sdPath.concat("/").concat(apkName).concat(".apk");
             //String apkPath = "/storage/emulated/0/Download/com.tencent.mm.apk";
-            //ApkUtils.install(this, new File(apkPath));
             //Log.d(TGA, "apkPath = " + apkPath);
             Class<?> ServiceManager = Class.forName("android.os.ServiceManager");
             Method getService = ServiceManager.getDeclaredMethod("getService", String.class);
@@ -329,18 +334,17 @@ public class NetworkGetService extends Service {
             IPackageManager iPm = IPackageManager.Stub.asInterface(packAgeBinder);
             VerificationParams verificationParams=new VerificationParams();
             try {
-                Log.i("maogl","1");
+                Log.i(TGA, "1");
                 iPm.installPackage(apkPath, installObserver2,INSTALL_REPLACE_EXISTING,
                         new File(apkPath).getPath(),verificationParams,null);
-                Log.i("maogl","2");
+                Log.i(TGA, "2");
 
             }catch (Exception e){
                 e.printStackTrace();
             }
         }catch (Exception e) {
             e.printStackTrace();
-            Log.d("panzq", "安装失败1");
-
+            Log.d(TGA, "安装失败1");
         }
     }
 
@@ -351,9 +355,10 @@ public class NetworkGetService extends Service {
             if (returnCode == 1) //返回1表示安装成功，否则安装失败
             {
                 Toast.makeText(NetworkGetService.this, "安装成功！", Toast.LENGTH_SHORT).show();
-                Log.e("panzq", "packageName=" + packageName + ",returnCode=" + returnCode);
+                Log.e(TGA, "packageName=" + packageName + ",returnCode=" + returnCode);
             } else {
                 Toast.makeText(NetworkGetService.this, "安装失败！", Toast.LENGTH_SHORT).show();
+                Log.d(TGA, "安装失败！");
             }
         }
     }
@@ -381,7 +386,8 @@ public class NetworkGetService extends Service {
 
         @Override
         public void onError(Progress progress) {
-
+            mDownloadTask.remove(true);
+            stopSelf();
         }
 
         @Override
@@ -392,6 +398,10 @@ public class NetworkGetService extends Service {
             //ApkUtils.install(getApplicationContext(), new File(progress.filePath));
             //mDownloadTask.remove(true);
             installPackage(progress.filePath);
+            mDownloadTask.remove();
+            Log.d(TGA, "从installPackage退出了！");
+            stopSelf();
+
         }
 
         @Override

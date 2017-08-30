@@ -31,7 +31,13 @@ public class NetworkStateReceiver extends BroadcastReceiver {
                 mContext.startService(stService);
                 Log.d(TGA, "get Network!");
             }else {
-                Toast.makeText(mContext, "Not Network!", Toast.LENGTH_SHORT).show();
+                try {
+                    Intent spService = new Intent(context,NetworkStateReceiver.class);
+                    mContext.stopService(spService);
+                    Toast.makeText(mContext, "Not Network!", Toast.LENGTH_SHORT).show();
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
             }
         }catch (Exception e){
             e.printStackTrace();
