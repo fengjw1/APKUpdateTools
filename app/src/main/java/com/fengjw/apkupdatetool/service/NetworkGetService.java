@@ -4,7 +4,9 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.IPackageInstallObserver;
+import android.content.pm.IPackageInstallObserver2;
 import android.content.pm.IPackageManager;
+import android.content.pm.VerificationParams;
 import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
@@ -21,6 +23,8 @@ import android.widget.Toast;
 import com.fengjw.apkupdatetool.DownloadListActivity;
 import com.fengjw.apkupdatetool.MainActivity;
 import com.fengjw.apkupdatetool.utils.ApkModel;
+import com.fengjw.apkupdatetool.utils.ApkPath;
+import com.fengjw.apkupdatetool.utils.ApkUtils;
 import com.fengjw.apkupdatetool.utils.AppInfo;
 import com.fengjw.apkupdatetool.utils.AppInfoProvider;
 import com.fengjw.apkupdatetool.utils.HeadBean;
@@ -32,6 +36,7 @@ import com.lzy.okgo.db.DownloadManager;
 import com.lzy.okgo.model.Progress;
 import com.lzy.okgo.request.GetRequest;
 import com.lzy.okserver.OkDownload;
+import com.lzy.okserver.download.DownloadListener;
 import com.lzy.okserver.download.DownloadTask;
 
 import java.io.File;
@@ -48,16 +53,16 @@ public class NetworkGetService extends Service {
     private List<ApkModel> apks; //类型是ApkModel
     private static final int GET_ALL_APP_FINISH = 1;
     private static final String TGA = "NetworkGetService";
-
+    private static List<ApkPath> apkPaths;
     private final int INSTALL_REPLACE_EXISTING = 2;
     private final  String sdPath = Environment.getExternalStorageDirectory().getAbsolutePath();
-
     public NetworkGetService() {
     }
 
     private Handler handler = new Handler(){
         @Override
         public void handleMessage(Message msg) {
+            apkPaths = new ArrayList<>();
             switch (msg.what){
                 case GET_ALL_APP_FINISH:
                     Log.d(TGA, "这里是handler");
@@ -65,13 +70,26 @@ public class NetworkGetService extends Service {
                         //这里只是演示，表示请求可以传参，怎么传都行，和okgo使用方法一样
                         GetRequest<File> request = OkGo.<File>get(apk.url);
                         //这里第一个参数是tag，代表下载任务的唯一标识，传任意字符串都行，需要保证唯一,我这里用url作为了tag
-                        Log.d(TGA, "startAll");
+                        Log.d(TGA, "task!");
                         DownloadTask task = OkDownload.request(apk.url, request)//
                                 .priority(apk.priority)//
                                 .extra1(apk)//
                                 .save()//
                                 .register(new LogDownloadListener());//
                         task.start();
+                        task.register(new ListDownloadListener(task, apk.url));
+//                        Progress progress = task.progress;
+//                        String apkPath = progress.filePath;
+//                        String apkName = progress.fileName;
+//                        int apkState = progress.status;
+//                        Log.d(TGA, "apkPath : " + apkPath);
+//                        //Toast.makeText(NetworkGetService.this, apkPath, Toast.LENGTH_SHORT).show();
+//                        ApkPath apkPath1 = new ApkPath();
+//                        apkPath1.apkname = apkName;
+//                        apkPath1.apkpath = apkPath;
+//                        apkPath1.apkState = apkState;
+//                        apkPaths.add(apkPath1);
+                        //task.remove(true);
                     }
                     Log.d(TGA, "OKDownload work!");
                     Toast.makeText(NetworkGetService.this, "OKDownload work!", Toast.LENGTH_SHORT).show();
@@ -132,7 +150,6 @@ public class NetworkGetService extends Service {
 
     private void sendRequestWithOKHttp(){
         String url = "http://192.168.1.14:2700/6a648/ktc/test/version.json";
-        //String url = "https://10.0.2.2/get_data.json";
         apks = new ArrayList<>();
         Log.d(TGA, "sendRequestWithOKHttp");
         HttpUtil.sendOKHttpResquest(url, new okhttp3.Callback(){
@@ -177,16 +194,16 @@ public class NetworkGetService extends Service {
             //本地信息
             AppInfoProvider appInfoProvider = new AppInfoProvider(this);
             List<AppInfo> appInfoList = appInfoProvider.getAllApps();
-//        for (AppInfo appInfo : appInfoList){
-//            Log.d(TGA, "appName : " + appInfo.getApp_name());
-//            Log.d(TGA, "fileName : " + appInfo.getFile_name());
-//            Log.d(TGA, "verName : " + appInfo.getVer_name());
-//            Log.d(TGA, "verCode : " + appInfo.getVerCode());
-//            Log.d(TGA, "url : " + appInfo.getUrl());
-//            Log.d(TGA, "MD5 : " + appInfo.getMD5());
-//            Log.d(TGA, "packageName : " + appInfo.getPkg_name());
-//            Log.d(TGA, "-----------------------------------------");
-//        }
+        for (AppInfo appInfo : appInfoList){
+            Log.d(TGA, "appName : " + appInfo.getApp_name());
+            Log.d(TGA, "fileName : " + appInfo.getFile_name());
+            Log.d(TGA, "verName : " + appInfo.getVer_name());
+            Log.d(TGA, "verCode : " + appInfo.getVerCode());
+            Log.d(TGA, "url : " + appInfo.getUrl());
+            Log.d(TGA, "MD5 : " + appInfo.getMD5());
+            Log.d(TGA, "packageName : " + appInfo.getPkg_name());
+            Log.d(TGA, "-----------------------------------------");
+        }
 //
             Log.d(TGA, "-----------------------------------------");
             Log.d(TGA, "-----------------------------------------");
@@ -237,15 +254,14 @@ public class NetworkGetService extends Service {
                                 apkModel.description = description;
                                 Log.d(TGA, "apkModel.url = " + apkModel.url);
                                 apks.add(apkModel);
-                            }else {
+                            }else if (httpType == 2){
                                 Toast.makeText(NetworkGetService.this,
                                         "有Type == 2 需要更新", Toast.LENGTH_SHORT).show();
+                                Intent intent = new Intent(NetworkGetService.this, DownloadListActivity.class);
+                                startActivity(intent);
                             }
                         }
                     }
-//                    else {
-//                        Log.d(TGA, "httpAppPkgName : " + httpAppPkgName + " is not equal " + AppInfoPkgName);
-//                    }
                 }
             }
         }catch (Exception e){
@@ -297,48 +313,92 @@ public class NetworkGetService extends Service {
         //apks.add(apk4);
     }
 
-    public void installPackage()
+    public void installPackage(String apkPath)
     {
-        String apkName = "zuoyebang";
-        PackageInstallObserver installObserver = new PackageInstallObserver();
+        //String apkPath = sdPath.concat("/").concat(apkName).concat(".apk");
+        PackageInstallObserver2 installObserver2 = new PackageInstallObserver2();
         try {
             //String apkPath = sdPath.concat("/").concat(apkName).concat(".apk");
-            Progress progress = new Progress();
-            String apkPath = progress.filePath;
-            Log.d("panzq", "apkPath = "+apkPath);
+            //String apkPath = "/storage/emulated/0/Download/com.tencent.mm.apk";
+            //ApkUtils.install(this, new File(apkPath));
+            //Log.d(TGA, "apkPath = " + apkPath);
             Class<?> ServiceManager = Class.forName("android.os.ServiceManager");
             Method getService = ServiceManager.getDeclaredMethod("getService", String.class);
             getService.setAccessible(true);
             IBinder packAgeBinder = (IBinder) getService.invoke(null, "package");
             IPackageManager iPm = IPackageManager.Stub.asInterface(packAgeBinder);
-            iPm.installPackage(Uri.fromFile(new File(apkPath)), installObserver,INSTALL_REPLACE_EXISTING,
-                    new File(apkPath).getPath());
+            VerificationParams verificationParams=new VerificationParams();
+            try {
+                Log.i("maogl","1");
+                iPm.installPackage(apkPath, installObserver2,INSTALL_REPLACE_EXISTING,
+                        new File(apkPath).getPath(),verificationParams,null);
+                Log.i("maogl","2");
 
+            }catch (Exception e){
+                e.printStackTrace();
+            }
         }catch (Exception e) {
             e.printStackTrace();
             Log.d("panzq", "安装失败1");
-            try {
-                installObserver.packageInstalled(null, -1);
-                Log.d("panzq", "安装失败2");
-            } catch (RemoteException ignore) {
-                Log.d("panzq", "安装失败3");
-            }
+
         }
     }
 
-    public class PackageInstallObserver extends IPackageInstallObserver.Stub{
+    public class PackageInstallObserver2 extends IPackageInstallObserver2.Stub {
 
         @Override
-        public void packageInstalled(String packageName, int returnCode)throws RemoteException {
-            if(returnCode==1) //返回1表示安装成功，否则安装失败
+        public void packageInstalled(String packageName, int returnCode) throws RemoteException {
+            if (returnCode == 1) //返回1表示安装成功，否则安装失败
             {
                 Toast.makeText(NetworkGetService.this, "安装成功！", Toast.LENGTH_SHORT).show();
-                Log.e("panzq", "packageName="+packageName+",returnCode="+returnCode);
-            }else{
+                Log.e("panzq", "packageName=" + packageName + ",returnCode=" + returnCode);
+            } else {
                 Toast.makeText(NetworkGetService.this, "安装失败！", Toast.LENGTH_SHORT).show();
             }
         }
-
     }
+
+    private class ListDownloadListener extends DownloadListener{
+
+        private DownloadTask mDownloadTask;
+
+        public ListDownloadListener(DownloadTask task, Object tag) {
+            super(tag);
+            this.mDownloadTask = task;
+            Log.d(TGA, "ListDownloadListener");
+            Toast.makeText(NetworkGetService.this, "ListDownloadListener", Toast.LENGTH_SHORT).show();
+        }
+
+        @Override
+        public void onStart(Progress progress) {
+
+        }
+
+        @Override
+        public void onProgress(Progress progress) {
+
+        }
+
+        @Override
+        public void onError(Progress progress) {
+
+        }
+
+        @Override
+        public void onFinish(File file, Progress progress) {
+            Toast.makeText(NetworkGetService.this, "下载完成:" + progress.filePath,
+                    Toast.LENGTH_SHORT).show();
+            Log.d(TGA, progress.filePath);
+            //ApkUtils.install(getApplicationContext(), new File(progress.filePath));
+            //mDownloadTask.remove(true);
+            installPackage(progress.filePath);
+        }
+
+        @Override
+        public void onRemove(Progress progress) {
+
+        }
+    }
+
 
 }

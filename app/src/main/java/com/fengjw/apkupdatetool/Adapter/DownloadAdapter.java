@@ -286,96 +286,22 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
             Toast.makeText(context, "下载完成:" + progress.filePath, Toast.LENGTH_SHORT).show();
             updateData(type);
             Log.d(TGA, "type : " + progress.priority);
-
-            //type : 1 强制更新  2 提示更新
-            //final String progressStr = progress.filePath;
-//            Intent intent1 = new Intent(Intent.ACTION_VIEW);
-//            intent1.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//            intent1.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-//            intent1.setDataAndType(Uri.fromFile(new File(progress.filePath)),
-//                    "application/vnd.android.package-archive");
-//            Log.d(TGA, progress.filePath);
-//            context.startActivity(intent1);
-            if (progress.priority == 1){
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                intent.setDataAndType(Uri.fromFile(new File(progress.filePath)),
-                        "application/vnd.android.package-archive");
-                Log.d(TGA, progress.filePath);
-                context.startActivity(intent);
-            }else if (progress.priority == 2){
-                // 在外部Activity调用者看来，不需要在意太多内部实现，只需要传入一个url跟一个context即可
-//            AutoInstall.setUrl(Environment.getExternalStorageDirectory()
-//                    + "/Download/Spore.apk");
-//            AutoInstall.setUrl(progress.filePath);
-//            AutoInstall.install();
-//            Intent intent = new Intent(context, DownloadListActivity.class);
-//            context.startActivity(intent);
-            AlertDialog.Builder builder = new AlertDialog.Builder(context);
-            builder.setIcon(R.mipmap.ic_launcher);
-            builder.setTitle(progress.fileName);
-            builder.setMessage("请问是否进行安装？");
-            //builder.setMessage(progress.)
-            builder.setNegativeButton("取消", null);
-            builder.setPositiveButton("确定", new DialogInterface.OnClickListener() {
-                @Override
-                public void onClick(DialogInterface dialogInterface, int i) {
-//                    Intent intent = new Intent(Intent.ACTION_VIEW);
-//                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-//                    Uri contentUri = FileProvider.getUriForFile(context, BuildConfig.APPLICATION_ID + ".fileProvider",
-//                            new File(progress.filePath));
-//                    intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-//                    intent.setDataAndType(Uri.fromFile(new File(progress.filePath)),
-//                            "application/vnd.android.package-archive");
-//                    Log.d(TGA, progress.filePath);
-//                    context.startActivity(intent);
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
-                    intent.setDataAndType(Uri.fromFile(new File(progress.filePath)),
-                            "application/vnd.android.package-archive");
-                    Log.d(TGA, progress.filePath);
-                    context.startActivity(intent);
-                }
-            });
-            builder.show();
-            }
-
+            ApkUtils.install(context.getApplicationContext(), new File(progress.filePath));
+//                Intent intent = new Intent(Intent.ACTION_VIEW);
+//                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
+//                intent.setDataAndType(Uri.fromFile(new File(progress.filePath)),
+//                        "application/vnd.android.package-archive");
+//                Log.d(TGA, progress.filePath);
+//                //context.startActivity(intent);
+//                context.getApplicationContext().startActivity(intent);
         }
 
         @Override
         public void onRemove(Progress progress) {
+
         }
     }
 
 }
 
-class AutoInstall {
-    private static String mUrl;
-    private static Context mContext;
-
-    /**
-     * 外部传进来的url以便定位需要安装的APK
-     *
-     * @param url
-     */
-    public static void setUrl(String url) {
-        mUrl = url;
-    }
-
-    /**
-     * 安装
-     *
-     * @param context
-     *            接收外部传进来的context
-     */
-    public static void install(Context context) {
-        mContext = context;
-        // 核心是下面几句代码
-        Intent intent = new Intent(Intent.ACTION_VIEW);
-        intent.setDataAndType(Uri.fromFile(new File(mUrl)),
-                "application/vnd.android.package-archive");
-        mContext.startActivity(intent);
-    }
-}

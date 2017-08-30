@@ -19,8 +19,10 @@ import android.Manifest;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.IPackageInstallObserver;
+import android.content.pm.IPackageInstallObserver2;
 import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
+import android.content.pm.VerificationParams;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -761,37 +763,37 @@ public class DownloadListActivity extends BaseActivity {
 
     public void installPackage()
     {
-        String apkName = "zuoyebang";
-        PackageInstallObserver installObserver = new PackageInstallObserver();
+        String apkName = "NovaSettings";
+        //String apkPath = sdPath.concat("/").concat(apkName).concat(".apk");
+        PackageInstallObserver2 installObserver2 = new PackageInstallObserver2();
         try {
             //String apkPath = sdPath.concat("/").concat(apkName).concat(".apk");
             String apkPath = "/storage/emulated/0/Download/com.tencent.mm.apk";
             //ApkUtils.install(this, new File(apkPath));
-            Log.d(TGA, "apkPath = " + apkPath);
+            //Log.d(TGA, "apkPath = " + apkPath);
             Class<?> ServiceManager = Class.forName("android.os.ServiceManager");
             Method getService = ServiceManager.getDeclaredMethod("getService", String.class);
             getService.setAccessible(true);
             IBinder packAgeBinder = (IBinder) getService.invoke(null, "package");
             IPackageManager iPm = IPackageManager.Stub.asInterface(packAgeBinder);
+            VerificationParams verificationParams=new VerificationParams();
             try {
-                iPm.installPackage(Uri.fromFile(new File(apkPath)), installObserver,INSTALL_REPLACE_EXISTING,
-                        "com.tencent.mm");
+                Log.i("maogl","1");
+                iPm.installPackage(apkPath, installObserver2,INSTALL_REPLACE_EXISTING,
+                        new File(apkPath).getPath(),verificationParams,null);
+                Log.i("maogl","2");
+
             }catch (Exception e){
                 e.printStackTrace();
             }
         }catch (Exception e) {
             e.printStackTrace();
             Log.d("panzq", "安装失败1");
-            try {
-                installObserver.packageInstalled(null, -1);
-                Log.d("panzq", "安装失败2");
-            } catch (RemoteException ignore) {
-                Log.d("panzq", "安装失败3");
-            }
+
         }
     }
 
-    public class PackageInstallObserver extends IPackageInstallObserver.Stub {
+    public class PackageInstallObserver2 extends IPackageInstallObserver2.Stub {
 
         @Override
         public void packageInstalled(String packageName, int returnCode) throws RemoteException {
