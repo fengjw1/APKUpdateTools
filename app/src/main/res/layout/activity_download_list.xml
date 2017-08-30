@@ -60,7 +60,7 @@
                 android:layout_gravity="center"
                 android:background="@drawable/button"
                 android:text="@string/enter_test"
-                android:visibility="gone"/>
+                android:visibility="visible"/>
 
             <TextView
                 android:id="@+id/targetFolder"

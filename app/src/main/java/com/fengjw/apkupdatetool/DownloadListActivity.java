@@ -163,8 +163,8 @@ public class DownloadListActivity extends BaseActivity {
         button1.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-//                Intent intent = new Intent(DownloadListActivity.this, MainActivity.class);
-//                startActivity(intent);
+                Intent intent = new Intent(DownloadListActivity.this, MainActivity.class);
+                startActivity(intent);
                 //installPackage();
                /// String apkPath = "/storage/emulated/0/Download/com.qiyi.video.apk";
                 //install(apkPath);
@@ -769,6 +769,7 @@ public class DownloadListActivity extends BaseActivity {
         try {
             //String apkPath = sdPath.concat("/").concat(apkName).concat(".apk");
             String apkPath = "/storage/emulated/0/Download/com.tencent.mm.apk";
+            String apkurl = "/storage/emulated/0/Download/com.tencent.mm.apk";
             //ApkUtils.install(this, new File(apkPath));
             //Log.d(TGA, "apkPath = " + apkPath);
             Class<?> ServiceManager = Class.forName("android.os.ServiceManager");
