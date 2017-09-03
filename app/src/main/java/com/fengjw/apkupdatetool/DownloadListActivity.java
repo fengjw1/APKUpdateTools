@@ -290,7 +290,8 @@ public class DownloadListActivity extends BaseActivity {
 //                }
 //            }
 //        }).start();
-        String url = "http://192.168.1.14:2700/6a648/ktc/test/version.json";
+        //String url = "http://192.168.1.14:2700/6a648/ktc/test/version.json";
+        String url = "http://192.168.1.14:8800/index.php/apkapi?model=TV918&product=ktc&sdanum=SDA123456789";
         //String url = "https://10.0.2.2/get_data.json";
         apks = new ArrayList<>();
         Log.d(TGA, url);

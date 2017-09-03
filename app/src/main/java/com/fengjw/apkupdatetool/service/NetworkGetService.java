@@ -1,30 +1,20 @@
 package com.fengjw.apkupdatetool.service;
 
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
-import android.content.pm.IPackageInstallObserver;
 import android.content.pm.IPackageInstallObserver2;
 import android.content.pm.IPackageManager;
 import android.content.pm.VerificationParams;
-import android.net.Uri;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
-import android.support.annotation.IntDef;
-import android.support.v7.widget.DefaultItemAnimator;
-import android.support.v7.widget.DividerItemDecoration;
-import android.support.v7.widget.LinearLayoutManager;
 import android.util.Log;
 import android.widget.Toast;
 
 import com.fengjw.apkupdatetool.DownloadListActivity;
-import com.fengjw.apkupdatetool.MainActivity;
 import com.fengjw.apkupdatetool.utils.ApkModel;
-import com.fengjw.apkupdatetool.utils.ApkPath;
-import com.fengjw.apkupdatetool.utils.ApkUtils;
 import com.fengjw.apkupdatetool.utils.AppInfo;
 import com.fengjw.apkupdatetool.utils.AppInfoProvider;
 import com.fengjw.apkupdatetool.utils.HeadBean;
@@ -38,16 +28,13 @@ import com.lzy.okgo.request.GetRequest;
 import com.lzy.okserver.OkDownload;
 import com.lzy.okserver.download.DownloadListener;
 import com.lzy.okserver.download.DownloadTask;
-
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-
 import okhttp3.Call;
 import okhttp3.Response;
-
 public class NetworkGetService extends Service {
 
     private List<ApkModel> apks; //类型是ApkModel
@@ -115,6 +102,7 @@ public class NetworkGetService extends Service {
         Log.d(TGA, path);
         OkDownload.getInstance().getThreadPool().setCorePoolSize(3);
         init();
+
     }
 
     @Override
@@ -155,7 +143,9 @@ public class NetworkGetService extends Service {
 
     private void sendRequestWithOKHttp(){
         Log.d(TGA, "sendRequestWithOKHttp() now!");
-        String url = "http://192.168.1.14:2700/6a648/ktc/test/version.json";
+        //String url = "http://192.168.1.14:2700/6a648/ktc/test/version.json";
+        String url = "http://192.168.1.14:8800/index.php/apkapi?model=TV918&product=ktc&sdanum=SDA123456789";
+
         apks = new ArrayList<>();
         Log.d(TGA, "sendRequestWithOKHttp");
         HttpUtil.sendOKHttpResquest(url, new okhttp3.Callback(){
@@ -398,7 +388,7 @@ public class NetworkGetService extends Service {
             //ApkUtils.install(getApplicationContext(), new File(progress.filePath));
             //mDownloadTask.remove(true);
             installPackage(progress.filePath);
-            mDownloadTask.remove();
+            //mDownloadTask.remove();
             Log.d(TGA, "从installPackage退出了！");
             stopSelf();
 
