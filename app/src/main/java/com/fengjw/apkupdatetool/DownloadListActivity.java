@@ -460,6 +460,7 @@ public class DownloadListActivity extends BaseActivity {
                     //http
                     String httpAppPkgName = app.getPkg_name();
                     int httpAppverCode = app.getVer_code();
+                    int httpType = app.getUpdate_type();
                     //info
                     String AppInfoPkgName = appInfo.getPkg_name();
                     int AppInfoverCode = appInfo.getVerCode();
@@ -479,29 +480,30 @@ public class DownloadListActivity extends BaseActivity {
                     //判断是否更新
                     if (httpAppPkgName.equals(AppInfoPkgName)) {
                         if (httpAppverCode > AppInfoverCode) {
-                            String name =  app.getApp_name();
-                            String url = app.getApk_url();
-                            String iconUrl = app.getPic_url();
-                            String description = app.getIntroduction();
-                            int type = app.getUpdate_type();
-                            String verName = app.getVer_name() + app.getVer_code();
-                            Log.d(TGA, "name = " + name);
-                            Log.d(TGA, "url = " + url);
-                            Log.d(TGA, "verCode = " + app.getVer_code());
-                            Log.d(TGA, "type = " + app.getUpdate_type());
-                            ApkModel apkModel = new ApkModel();
-                            apkModel.name = name;
-                            apkModel.url = url;
+                            if (httpType == 2) {
+                                String name = app.getApp_name();
+                                String url = app.getApk_url();
+                                String iconUrl = app.getPic_url();
+                                String description = app.getIntroduction();
+                                int type = app.getUpdate_type();
+                                String verName = app.getVer_name() + app.getVer_code();
+                                Log.d(TGA, "name = " + name);
+                                Log.d(TGA, "url = " + url);
+                                Log.d(TGA, "verCode = " + app.getVer_code());
+                                Log.d(TGA, "type = " + app.getUpdate_type());
+                                ApkModel apkModel = new ApkModel();
+                                apkModel.name = name;
+                                apkModel.url = url;
 //                            apkModel.iconUrl = "http://file.market.xiaomi.com/thumbnail/" +
 //                                    "PNG/l114/AppStore/0c10c4c0155c9adf1282af008ed329378d54112ac";
-                            apkModel.verName = verName;
-                            apkModel.iconUrl = iconUrl;
-                            apkModel.priority = type;
-                            apkModel.description = description;
-                            Log.d(TGA, "apkModel.url = " + apkModel.url);
-                            apks.add(apkModel);
+                                apkModel.verName = verName;
+                                apkModel.iconUrl = iconUrl;
+                                apkModel.priority = type;
+                                apkModel.description = description;
+                                Log.d(TGA, "apkModel.url = " + apkModel.url);
+                                apks.add(apkModel);
+                            }
                         }
-
                     }
 //                    else {
 //                        Log.d(TGA, "httpAppPkgName : " + httpAppPkgName + " is not equal " + AppInfoPkgName);
