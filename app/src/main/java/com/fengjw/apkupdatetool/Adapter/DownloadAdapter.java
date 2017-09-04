@@ -227,7 +227,12 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
 //                    } else {
 //                        ApkUtils.install(context, new File(progress.filePath));
 //                    }
-                    ApkUtils.install(context, new File(progress.filePath));
+                    //ApkUtils.install(context, new File(progress.filePath));
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                    intent.setDataAndType(Uri.fromFile(new File(progress.filePath)),
+                            "application/vnd.android.package-archive");
+                    context.startActivity(intent);
                     Log.d(TGA, "apkUrl : " + progress.filePath);
                     break;
             }
