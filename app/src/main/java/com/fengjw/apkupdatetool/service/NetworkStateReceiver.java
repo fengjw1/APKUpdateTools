@@ -24,7 +24,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
             NetworkInfo wifiInfo = manager.getNetworkInfo(ConnectivityManager.TYPE_WIFI);
             NetworkInfo activeInfo = manager.getActiveNetworkInfo();
             if (wifiInfo.isConnected() || activeInfo.isConnected()){
-                Toast.makeText(mContext, "get Network!", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(mContext, "get Network!", Toast.LENGTH_SHORT).show();
                 //test
                 Log.d(TGA, "NetworkStateReceiver");
                 Intent stService = new Intent(context, NetworkGetService.class);
@@ -34,7 +34,7 @@ public class NetworkStateReceiver extends BroadcastReceiver {
                 try {
                     Intent spService = new Intent(context,NetworkStateReceiver.class);
                     mContext.stopService(spService);
-                    Toast.makeText(mContext, "Not Network!", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(mContext, "Not Network!", Toast.LENGTH_SHORT).show();
                 }catch (Exception e){
                     e.printStackTrace();
                 }

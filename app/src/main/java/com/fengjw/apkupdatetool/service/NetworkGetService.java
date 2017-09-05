@@ -5,12 +5,12 @@ import android.content.Intent;
 import android.content.pm.IPackageInstallObserver2;
 import android.content.pm.IPackageManager;
 import android.content.pm.VerificationParams;
+import android.graphics.drawable.Drawable;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.RemoteException;
-import android.os.SystemProperties;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -20,7 +20,9 @@ import com.fengjw.apkupdatetool.utils.AppInfo;
 import com.fengjw.apkupdatetool.utils.AppInfoProvider;
 import com.fengjw.apkupdatetool.utils.HeadBean;
 import com.fengjw.apkupdatetool.utils.HttpUtil;
+import com.fengjw.apkupdatetool.utils.INDEX;
 import com.fengjw.apkupdatetool.utils.LogDownloadListener;
+import com.fengjw.apkupdatetool.utils.getUrl;
 import com.google.gson.Gson;
 import com.lzy.okgo.OkGo;
 import com.lzy.okgo.db.DownloadManager;
@@ -30,30 +32,24 @@ import com.lzy.okserver.OkDownload;
 import com.lzy.okserver.download.DownloadListener;
 import com.lzy.okserver.download.DownloadTask;
 
-import java.io.BufferedInputStream;
 import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Properties;
-
 import okhttp3.Call;
 import okhttp3.Response;
 
-import static com.bumptech.glide.gifdecoder.GifHeaderParser.TAG;
 
 public class NetworkGetService extends Service {
 
     private List<ApkModel> apks; //类型是ApkModel
     private static final int GET_ALL_APP_FINISH = 1;
     private static final String TGA = "NetworkGetService";
-    //private static List<ApkPath> apkPaths;
     private final int INSTALL_REPLACE_EXISTING = 2;
+    private final int GET_ALL_APP_TOAST_FINFISH = 3;
     private static int Index = 0;
-    //private final  String sdPath = Environment.getExternalStorageDirectory().getAbsolutePath();
+    private INDEX mINDEX;
     public NetworkGetService() {
     }
 
@@ -92,7 +88,16 @@ public class NetworkGetService extends Service {
                         Log.d(TGA, "apk 循环次数 " + i++);
                     }
                     Log.d(TGA, "OKDownload work!");
-                    Toast.makeText(NetworkGetService.this, "OKDownload work!", Toast.LENGTH_SHORT).show();
+                    //Toast.makeText(NetworkGetService.this, "OKDownload work!", Toast.LENGTH_SHORT).show();
+                    break;
+                case GET_ALL_APP_TOAST_FINFISH:
+                    OkDownload.getInstance().removeAll(true);
+                    if (mINDEX.getIndex() == 2){
+                        Log.d(TGA, "index jump!");
+                        Intent intent = new Intent(getApplicationContext(), DownloadListActivity.class);
+                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                        startActivity(intent);
+                    }
                     break;
                 default:
                     break;
@@ -104,7 +109,7 @@ public class NetworkGetService extends Service {
     public void onCreate() {
         super.onCreate();
         Log.d(TGA, "onCreate");
-        Toast.makeText(this, "onCreate", Toast.LENGTH_SHORT).show();//这里只启动一次
+        //Toast.makeText(this, "onCreate", Toast.LENGTH_SHORT).show();//这里只启动一次
         OkDownload.getInstance().setFolder(
                 Environment.getExternalStoragePublicDirectory(
                         Environment.DIRECTORY_DOWNLOADS).getPath());
@@ -113,15 +118,12 @@ public class NetworkGetService extends Service {
         Log.d(TGA, path);
         OkDownload.getInstance().getThreadPool().setCorePoolSize(3);
         init();
-
-
-
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         Log.d(TGA, "onStartCommand");
-        Toast.makeText(this, "onStartCommand", Toast.LENGTH_SHORT).show();
+        //Toast.makeText(this, "onStartCommand", Toast.LENGTH_SHORT).show();
         //init();
         return super.onStartCommand(intent, flags, startId);
     }
@@ -130,7 +132,6 @@ public class NetworkGetService extends Service {
     public void onDestroy() {
         Log.d(TGA, "onDestroy");
         super.onDestroy();
-
     }
 
     @Override
@@ -144,6 +145,7 @@ public class NetworkGetService extends Service {
         //从数据库中回复数据
         List<Progress> progressList = DownloadManager.getInstance().getAll();
         OkDownload.restore(progressList);
+        mINDEX = new INDEX();
         new Thread(new Runnable() {
             @Override
             public void run() {
@@ -152,13 +154,16 @@ public class NetworkGetService extends Service {
             }
         }).start();
 
+        Log.d(TGA, "here!");
+
+
     }
 
     private void sendRequestWithOKHttp(){
         Log.d(TGA, "sendRequestWithOKHttp() now!");
-        //String url = "http://192.168.1.14:2700/6a648/ktc/test/version.json";
         String url = "http://192.168.1.14:8800/index.php/apkapi?model=TV918&product=ktc&sdanum=SDA123456789";
-        String urlTest = getRemoteUri();
+        //正式使用下面的url
+        String urlTest = getUrl.getRemoteUri();
         Log.d(TGA, "urlTest : " + urlTest);
         apks = new ArrayList<>();
         Log.d(TGA, "sendRequestWithOKHttp");
@@ -174,9 +179,8 @@ public class NetworkGetService extends Service {
                 if (!response.isSuccessful()) throw new IOException("Unexpected code " + response);
                 String responseData = response.body().string();
                 Log.d(TGA, "onResponse");
-                Log.d(TGA, responseData);
+                //Log.d(TGA, responseData);
                 parseNewJSONWithJSONObject(responseData);
-                //parseTestJSONWithJSONObject(responseData);
             }
         });
     }
@@ -188,18 +192,18 @@ public class NetworkGetService extends Service {
             HeadBean bean = gson.fromJson(responseData, HeadBean.class);
             List<HeadBean.ApklistBean> appList = bean.getApklist();
 
-            for (HeadBean.ApklistBean app : appList){ //foreach()
-                Log.d(TGA, "appName : " + app.getApp_name());
-                Log.d(TGA, "fileName : " + app.getFile_name());
-                Log.d(TGA, "verName : " + app.getVer_name());
-                Log.d(TGA, "verCode : " + app.getVer_code());
-                Log.d(TGA, "url : " + app.getApk_url());
-                Log.d(TGA, "MD5 : " + app.getMD5());
-                Log.d(TGA, "packageName : " + app.getPkg_name());
-                Log.d(TGA, "type : " + app.getUpdate_type());
-                Log.d(TGA, "Introduction : " + app.getIntroduction());
-                Log.d(TGA, "-----------------------------------------");
-            }
+//            for (HeadBean.ApklistBean app : appList){ //foreach()
+//                Log.d(TGA, "appName : " + app.getApp_name());
+//                Log.d(TGA, "fileName : " + app.getFile_name());
+//                Log.d(TGA, "verName : " + app.getVer_name());
+//                Log.d(TGA, "verCode : " + app.getVer_code());
+//                Log.d(TGA, "url : " + app.getApk_url());
+//                Log.d(TGA, "MD5 : " + app.getMD5());
+//                Log.d(TGA, "packageName : " + app.getPkg_name());
+//                Log.d(TGA, "type : " + app.getUpdate_type());
+//                Log.d(TGA, "Introduction : " + app.getIntroduction());
+//                Log.d(TGA, "-----------------------------------------");
+//            }
 
             //本地信息
             AppInfoProvider appInfoProvider = new AppInfoProvider(this);
@@ -227,20 +231,8 @@ public class NetworkGetService extends Service {
                     //info
                     String AppInfoPkgName = appInfo.getPkg_name();
                     int AppInfoverCode = appInfo.getVerCode();
-//                    Log.d(TGA, "httpAppverCode" + httpAppverCode);
-//                    Log.d(TGA, "httpAppPkgName : " + httpAppPkgName);
-//
-//                    Log.d(TGA, "AppInfoverCode" + AppInfoverCode);
-//                    Log.d(TGA, "AppInfoPkgName : " + AppInfoPkgName);
-
-                    //
-//                    Log.d(TGA, AppInfoverCode + "");
-//                    Log.d(TGA, httpAppPkgName);
-//                    Log.d(TGA, httpAppverCode + "");
-//                    Log.d(TGA, AppInfoPkgName);
 
                     //判断是否更新
-
                     if (httpAppPkgName.equals(AppInfoPkgName)) {
                         if (httpAppverCode > AppInfoverCode) {
                             if (httpType == 1) {
@@ -248,6 +240,7 @@ public class NetworkGetService extends Service {
                                 String url = app.getApk_url();
                                 String iconUrl = app.getPic_url();
                                 String description = app.getIntroduction();
+                                Drawable icon = appInfo.getIcon();
                                 int type = app.getUpdate_type();
                                 String verName = app.getVer_name() + app.getVer_code();
 //                                Log.d(TGA, "name = " + name);
@@ -257,19 +250,15 @@ public class NetworkGetService extends Service {
                                 ApkModel apkModel = new ApkModel();
                                 apkModel.name = name;
                                 apkModel.url = url;
-//                            apkModel.iconUrl = "http://file.market.xiaomi.com/thumbnail/" +
-//                                    "PNG/l114/AppStore/0c10c4c0155c9adf1282af008ed329378d54112ac";
                                 apkModel.verName = verName;
-                                apkModel.iconUrl = iconUrl;
+                                apkModel.icon = icon;
                                 apkModel.priority = type;
                                 apkModel.description = description;
                                 Log.d(TGA, "apkModel.url = " + apkModel.url);
                                 apks.add(apkModel);
                             } else if (httpType == 2) {
-//                                Toast.makeText(NetworkGetService.this,
-//                                        "有Type == 2 需要更新", Toast.LENGTH_SHORT).show();
-                                Index = 2;
-                                Log.d(TGA, "Index? : " + Index);
+                                mINDEX.setIndex(2);
+                                Log.d(TGA, "mINDEX : " + mINDEX.getIndex());
                             }
                         }
                     }
@@ -280,14 +269,14 @@ public class NetworkGetService extends Service {
         }
 
         //initData();
-        Log.d(TGA, "initData after!");
-        if (Index == 2){
-            Log.d(TGA, "index jump!");
-            Intent intent = new Intent(getApplicationContext(), DownloadListActivity.class);
-            intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-            startActivity(intent);
+
+        if (apks.size() == 0){
+            handler.sendEmptyMessage(GET_ALL_APP_TOAST_FINFISH);
+        }else {
+            handler.sendEmptyMessage(GET_ALL_APP_FINISH);
+            Log.d(TGA, "静默安装发送！");
         }
-        handler.sendEmptyMessage(GET_ALL_APP_FINISH);
+        Log.d(TGA, "initData after!");
     }
 
     private void initData() {
@@ -317,12 +306,8 @@ public class NetworkGetService extends Service {
 
     public void installPackage(String apkPath)
     {
-        //String apkPath = sdPath.concat("/").concat(apkName).concat(".apk");
         PackageInstallObserver2 installObserver2 = new PackageInstallObserver2();
         try {
-            //String apkPath = sdPath.concat("/").concat(apkName).concat(".apk");
-            //String apkPath = "/storage/emulated/0/Download/com.tencent.mm.apk";
-            //Log.d(TGA, "apkPath = " + apkPath);
             Class<?> ServiceManager = Class.forName("android.os.ServiceManager");
             Method getService = ServiceManager.getDeclaredMethod("getService", String.class);
             getService.setAccessible(true);
@@ -367,7 +352,7 @@ public class NetworkGetService extends Service {
             super(tag);
             this.mDownloadTask = task;
             Log.d(TGA, "ListDownloadListener");
-            Toast.makeText(NetworkGetService.this, "ListDownloadListener", Toast.LENGTH_SHORT).show();
+            //Toast.makeText(NetworkGetService.this, "ListDownloadListener", Toast.LENGTH_SHORT).show();
         }
 
         @Override
@@ -388,8 +373,8 @@ public class NetworkGetService extends Service {
 
         @Override
         public void onFinish(File file, Progress progress) {
-            Toast.makeText(NetworkGetService.this, "下载完成:" + progress.filePath,
-                    Toast.LENGTH_SHORT).show();
+//            Toast.makeText(NetworkGetService.this, "下载完成:" + progress.filePath,
+//                    Toast.LENGTH_SHORT).show();
             Log.d(TGA, progress.filePath);
             //ApkUtils.install(getApplicationContext(), new File(progress.filePath));
             //mDownloadTask.remove(true);
@@ -407,78 +392,5 @@ public class NetworkGetService extends Service {
     }
 
 
-    public static String getRemoteUri() {
-        String apkPath = "http://192.168.1.14:8800/index.php/apkapi?model=TV918&product=ktc&sdanum=SDA123456789";
-        String uri = "http://" + getRemoteHost() + "/index.php/apkapi?model=" + getOtaProductName()
-                + "&product=" + getCustomer()
-                + "&sdanum=" +  getSDANum_Ini();
-        Log.v(TAG, "uri="+uri);
-        return uri;
-    }
-
-    public static String getRemoteHost() {
-        //String remoteHost = SystemProperties.get("ro.product.ota.host");
-        String remoteHost = null;
-        if(remoteHost == null || remoteHost.length() == 0) {
-            remoteHost = "192.168.1.14:8800";
-        }
-        return remoteHost;
-    }
-
-    public static String getOtaProductName() {
-        //modify for new ota server, "ro.product.model" change to "ktc.ota.model", zjd20160428
-        String productName = SystemProperties.get("ktc.ota.model");
-        if(productName.contains(" ")) {
-            productName = productName.replaceAll(" ", "");
-        }
-
-        return productName;
-    }
-
-    public static String getCustomer(){
-        String customer = SystemProperties.get("ktc.ota.customer");
-        if(customer == null || customer.length() == 0) {
-            customer = "ktc";
-        }
-        if(customer.contains(" ")) {
-            customer = customer.replaceAll(" ", "");
-        }
-        return customer;
-    }
-    public static String getSDANum_Ini(){
-        String sdaNum = getProp("/config/model/Customer_1.ini", "PRODUCT_SDA_NO");
-        sdaNum = sdaNum.replaceAll("\"", "");
-        sdaNum = sdaNum.replaceAll(";", "");
-        sdaNum = sdaNum.replaceAll(" ", "");
-
-        return sdaNum;
-    }
-
-    //to parser Customer_1.ini
-    public static String getProp(String file, String key)
-    {
-        String value = "";
-        Properties props = new Properties();
-        InputStream in;
-        try {
-            in = new BufferedInputStream(new FileInputStream(file));// "/system/build.prop"
-            props.load(in);
-            value = props.getProperty(key);
-            in.close();
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        if(value != null){
-            String[] array = value.split(";");
-            if (array[0].length() > 0){
-                value = array[0];
-            }
-            value = value.replace("\"", "");
-            value = value.trim();
-            return value;
-        }
-        else
-            return "";
-    }
 
 }

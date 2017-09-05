@@ -23,6 +23,7 @@ import android.content.pm.IPackageInstallObserver2;
 import android.content.pm.IPackageManager;
 import android.content.pm.PackageManager;
 import android.content.pm.VerificationParams;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Environment;
@@ -51,6 +52,7 @@ import com.fengjw.apkupdatetool.utils.AppInfoProvider;
 import com.fengjw.apkupdatetool.utils.HeadBean;
 import com.fengjw.apkupdatetool.utils.HttpUtil;
 import com.fengjw.apkupdatetool.utils.LogDownloadListener;
+import com.fengjw.apkupdatetool.utils.getUrl;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.lzy.okgo.OkGo;
@@ -234,13 +236,6 @@ public class DownloadListActivity extends BaseActivity {
             }
         }).start();
 
-
-//        NetworkGetReceiver networkGetReceiver = new NetworkGetReceiver();
-//        IntentFilter filter = new IntentFilter();
-//        filter.addAction(ConnectivityManager.CONNECTIVITY_ACTION);
-//        registerReceiver(networkGetReceiver, filter);
-//        Log.d(TGA, "这里执行了Receiver");
-
     }
 
 //    @Override
@@ -293,6 +288,7 @@ public class DownloadListActivity extends BaseActivity {
         //String url = "http://192.168.1.14:2700/6a648/ktc/test/version.json";
         String url = "http://192.168.1.14:8800/index.php/apkapi?model=TV918&product=ktc&sdanum=SDA123456789";
         //String url = "https://10.0.2.2/get_data.json";
+        String urlTest = getUrl.getRemoteUri();
         apks = new ArrayList<>();
         Log.d(TGA, url);
         HttpUtil.sendOKHttpResquest(url, new okhttp3.Callback(){
@@ -313,111 +309,6 @@ public class DownloadListActivity extends BaseActivity {
         });
     }
 
-    private void parseTestJSONWithJSONObject(String responseData){
-        Gson gson = new Gson();
-        List<AppInfo> appList = gson.fromJson(responseData, new TypeToken<List<AppInfo>>(){}.getType());
-
-        for (AppInfo app : appList){ //foreach()
-            Log.d(TGA, "appName : " + app.getApp_name());
-            Log.d(TGA, "fileName : " + app.getFile_name());
-            Log.d(TGA, "verName : " + app.getVer_name());
-            Log.d(TGA, "verCode : " + app.getVerCode());
-            Log.d(TGA, "url : " + app.getUrl());
-            Log.d(TGA, "MD5 : " + app.getMD5());
-            Log.d(TGA, "packageName : " + app.getPkg_name());
-            Log.d(TGA, "-----------------------------------------");
-        }
-//        Log.d(TGA, gson.toString());
-//        List<AppInfo> appList = gson.fromJson(responseData, new TypeToken<List<AppInfo>>(){}.getType());
-//        for (AppInfo app : appList){ //foreach()
-//            Log.d(TGA, "appName : " + app.getApp_name());
-//            Log.d(TGA, "fileName : " + app.getFile_name());
-//            Log.d(TGA, "verName : " + app.getVer_name());
-//            Log.d(TGA, "verCode : " + app.getVerCode());
-//            Log.d(TGA, "url : " + app.getUrl());
-//            Log.d(TGA, "MD5 : " + app.getMD5());
-//            Log.d(TGA, "packageName : " + app.getPkg_name());
-//            Log.d(TGA, "-----------------------------------------");
-//        }
-
-        //本地信息
-        AppInfoProvider appInfoProvider = new AppInfoProvider(this);
-        List<AppInfo> appInfoList = appInfoProvider.getAllApps();
-        for (AppInfo appInfo : appInfoList){
-            Log.d(TGA, "appName : " + appInfo.getApp_name());
-            Log.d(TGA, "fileName : " + appInfo.getFile_name());
-            Log.d(TGA, "verName : " + appInfo.getVer_name());
-            Log.d(TGA, "verCode : " + appInfo.getVerCode());
-            Log.d(TGA, "url : " + appInfo.getUrl());
-            Log.d(TGA, "MD5 : " + appInfo.getMD5());
-            Log.d(TGA, "packageName : " + appInfo.getPkg_name());
-            Log.d(TGA, "-----------------------------------------");
-        }
-//
-        Log.d(TGA, "-----------------------------------------");
-        Log.d(TGA, "-----------------------------------------");
-        Log.d(TGA, "-----------------------------------------");
-        try{
-            for (AppInfo app : appList){
-                for (AppInfo appInfo : appInfoList){
-                    //http
-                    String httpAppPkgName = app.getPkg_name();
-                    Log.d(TGA, "httpAppPkgName : " + httpAppPkgName);
-                    int httpAppverCode = app.getVerCode();
-                    Log.d(TGA, "httpAppverCode" + httpAppverCode);
-                    //info
-                    String AppInfoPkgName = appInfo.getPkg_name();
-                    Log.d(TGA, "AppInfoPkgName : " + AppInfoPkgName);
-                    int AppInfoverCode = appInfo.getVerCode();
-                    Log.d(TGA, "AppInfoverCode" + AppInfoverCode);
-
-                    //
-//                    Log.d(TGA, AppInfoverCode + "");
-//                    Log.d(TGA, httpAppPkgName);
-//                    Log.d(TGA, httpAppverCode + "");
-//                    Log.d(TGA, AppInfoPkgName);
-
-                    //判断是否更新
-                    if (httpAppPkgName.equals(AppInfoPkgName)) {
-                        if (httpAppverCode > AppInfoverCode) {
-                            String name =  app.getApp_name();
-                            String url = app.getUrl();
-                            //String iconUrl = app.get();
-                            int type = app.getType();
-                            Log.d(TGA, "name = " + name);
-                            Log.d(TGA, "url = " + url);
-                            ApkModel apkModel = new ApkModel();
-                            apkModel.name = name;
-                            apkModel.url = url;
-                            apkModel.iconUrl = "http://file.market.xiaomi.com/thumbnail/" +
-                                    "PNG/l114/AppStore/0c10c4c0155c9adf1282af008ed329378d54112ac";
-                            //apkModel.iconUrl = iconUrl;
-                            apkModel.priority = 2;
-                            Log.d(TGA, "apkModel.url = " + apkModel.url);
-                            apks.add(apkModel);
-                            //count++;
-//                            Log.d(TGA, "httpAppPkgName : " + httpAppPkgName + " httpAppverCode : "
-//                                    + httpAppverCode + " count = " + count);
-                        }
-                    }
-//                    else {
-//                        Log.d(TGA, "httpAppPkgName : " + httpAppPkgName + " is not equal " + AppInfoPkgName);
-//                    }
-                }
-            }
-        }catch (Exception e){
-            e.printStackTrace();
-        }
-
-        //test url
-        for (ApkModel apk : apks){
-            Log.d(TGA, "apk url = " + apk.url);
-        }
-        Log.d(TGA, "这里之后呢？");
-        //initData();
-        //发送消息，进行异步加载
-        handler.sendEmptyMessage(GET_ALL_APP_FINISH);
-    }
     private void parseNewJSONWithJSONObject(String responseData){
 
         try {
@@ -486,6 +377,7 @@ public class DownloadListActivity extends BaseActivity {
                                 String iconUrl = app.getPic_url();
                                 String description = app.getIntroduction();
                                 int type = app.getUpdate_type();
+                                Drawable icon = appInfo.getIcon();
                                 String verName = app.getVer_name() + app.getVer_code();
                                 Log.d(TGA, "name = " + name);
                                 Log.d(TGA, "url = " + url);
@@ -496,6 +388,7 @@ public class DownloadListActivity extends BaseActivity {
                                 apkModel.url = url;
 //                            apkModel.iconUrl = "http://file.market.xiaomi.com/thumbnail/" +
 //                                    "PNG/l114/AppStore/0c10c4c0155c9adf1282af008ed329378d54112ac";
+                                apkModel.icon = icon;
                                 apkModel.verName = verName;
                                 apkModel.iconUrl = iconUrl;
                                 apkModel.priority = type;
@@ -529,7 +422,7 @@ public class DownloadListActivity extends BaseActivity {
 //                if (apkModel.getName().equals(app.getApp_name()))
 //            }
 //        }
-
+        //initData();
         handler.sendEmptyMessage(GET_ALL_APP_FINISH);
     }
 
@@ -642,7 +535,8 @@ public class DownloadListActivity extends BaseActivity {
             priority.setText(String.format("优先级：%s", apk.priority));
             name.setText(apk.name);
             description.setText(apk.description);
-            displayImage(apk.iconUrl, icon);
+            //displayImage(apk.iconUrl, icon);
+            icon.setImageDrawable(apk.getIcon());
             vername.setText(apk.verName);
             itemView.setOnClickListener(this);
         }
@@ -764,100 +658,7 @@ public class DownloadListActivity extends BaseActivity {
         apks.add(apk15);
     }
 
-    public void installPackage()
-    {
-        String apkName = "NovaSettings";
-        //String apkPath = sdPath.concat("/").concat(apkName).concat(".apk");
-        PackageInstallObserver2 installObserver2 = new PackageInstallObserver2();
-        try {
-            //String apkPath = sdPath.concat("/").concat(apkName).concat(".apk");
-            String apkPath = "/storage/emulated/0/Download/com.tencent.mm.apk";
-            String apkurl = "/storage/emulated/0/Download/com.tencent.mm.apk";
-            //ApkUtils.install(this, new File(apkPath));
-            //Log.d(TGA, "apkPath = " + apkPath);
-            Class<?> ServiceManager = Class.forName("android.os.ServiceManager");
-            Method getService = ServiceManager.getDeclaredMethod("getService", String.class);
-            getService.setAccessible(true);
-            IBinder packAgeBinder = (IBinder) getService.invoke(null, "package");
-            IPackageManager iPm = IPackageManager.Stub.asInterface(packAgeBinder);
-            VerificationParams verificationParams=new VerificationParams();
-            try {
-                Log.i("maogl","1");
-                iPm.installPackage(apkPath, installObserver2,INSTALL_REPLACE_EXISTING,
-                        new File(apkPath).getPath(),verificationParams,null);
-                Log.i("maogl","2");
 
-            }catch (Exception e){
-                e.printStackTrace();
-            }
-        }catch (Exception e) {
-            e.printStackTrace();
-            Log.d("panzq", "安装失败1");
-
-        }
-    }
-
-    public class PackageInstallObserver2 extends IPackageInstallObserver2.Stub {
-
-        @Override
-        public void packageInstalled(String packageName, int returnCode) throws RemoteException {
-            if (returnCode == 1) //返回1表示安装成功，否则安装失败
-            {
-                Toast.makeText(DownloadListActivity.this, "安装成功！", Toast.LENGTH_SHORT).show();
-                Log.e("panzq", "packageName=" + packageName + ",returnCode=" + returnCode);
-            } else {
-                Toast.makeText(DownloadListActivity.this, "安装失败！", Toast.LENGTH_SHORT).show();
-            }
-        }
-    }
-
-    public boolean install(String apkPath) {
-        boolean result = false;
-        DataOutputStream dataOutputStream = null;
-        BufferedReader errorStream = null;
-        try {
-            // 申请su权限
-            Process process = Runtime.getRuntime().exec("su");
-            dataOutputStream = new DataOutputStream(process.getOutputStream());
-            // 执行pm install命令
-            String command = " mount -o remount,rw /system\rpm install -r " + apkPath + "\r";
-            dataOutputStream.write(command.getBytes(Charset.forName("utf-8")));
-            dataOutputStream.flush();
-            dataOutputStream.writeBytes("exit\n");
-            dataOutputStream.flush();
-            process.waitFor();
-            errorStream = new BufferedReader(new InputStreamReader(process.getErrorStream()));
-            String msg = "";
-            String line;
-            // 读取命令的执行结果
-            while ((line = errorStream.readLine()) != null) {
-                msg += line;
-            }
-            Log.d("TAG", "install msg is " + msg);
-            Toast.makeText(this,"msg:" + msg, Toast.LENGTH_SHORT).show();
-
-            // 如果执行结果中包含Failure字样就认为是安装失败，否则就认为安装成功
-            if (!msg.contains("Failure")) {
-                Toast.makeText(this, "成功！", Toast.LENGTH_SHORT).show();
-                result = true;
-            }
-        } catch (Exception e) {
-            Toast.makeText(this, "Exception", Toast.LENGTH_SHORT).show();
-            Log.e(TGA, e.getMessage(), e);
-        } finally {
-            try {
-                if (dataOutputStream != null) {
-                    dataOutputStream.close();
-                }
-                if (errorStream != null) {
-                    errorStream.close();
-                }
-            } catch (IOException e) {
-                Log.e(TGA, e.getMessage(), e);
-            }
-        }
-        return result;
-    }
 
 }
 

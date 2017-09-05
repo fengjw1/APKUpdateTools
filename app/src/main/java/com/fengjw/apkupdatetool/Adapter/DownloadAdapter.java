@@ -164,7 +164,8 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
             Progress progress = task.progress;
             ApkModel apk = (ApkModel) progress.extra1;
             if (apk != null) {
-                Glide.with(context).load(apk.iconUrl).error(R.mipmap.ic_launcher).into(icon);
+                //Glide.with(context).load(apk.iconUrl).error(R.mipmap.ic_launcher).into(icon);
+                icon.setImageDrawable(apk.getIcon());
                 name.setText(apk.name);
                 priority.setText(String.format("优先级：%s", progress.priority));
             } else {
@@ -173,8 +174,8 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
         }
 
         public void refresh(Progress progress) {
-            String currentSize = Formatter.formatFileSize(context, progress.currentSize);
-            String totalSize = Formatter.formatFileSize(context, progress.totalSize);
+            String currentSize = Formatter.formatFileSize(context, (int)progress.currentSize);
+            String totalSize = Formatter.formatFileSize(context, (int)progress.totalSize);
             downloadSize.setText(currentSize + "/" + totalSize);
             priority.setText(String.format("优先级：%s", progress.priority));
             switch (progress.status) {
@@ -189,6 +190,7 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
                 case Progress.ERROR:
                     netSpeed.setText("下载出错");
                     download.setText("出错");
+                    //download.removeCallbacks(task);
                     break;
                 case Progress.WAITING:
                     netSpeed.setText("等待中");
@@ -216,7 +218,8 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
                 case Progress.PAUSE:
                 case Progress.NONE:
                 case Progress.ERROR:
-                    task.start();
+                    //task.start();
+                    //task.restart();
                     break;
                 case Progress.LOADING:
                     task.pause();
@@ -228,12 +231,10 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
 //                        ApkUtils.install(context, new File(progress.filePath));
 //                    }
                     //ApkUtils.install(context, new File(progress.filePath));
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                    intent.setDataAndType(Uri.fromFile(new File(progress.filePath)),
-                            "application/vnd.android.package-archive");
-                    context.startActivity(intent);
-                    Log.d(TGA, "apkUrl : " + progress.filePath);
+                    if (progress.priority == 2) {
+                        ApkUtils.install(context, new File(progress.filePath));
+                        Log.d(TGA, "apkUrl : " + progress.filePath);
+                    }
                     break;
             }
             refresh(progress);
@@ -288,10 +289,10 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
 
         @Override
         public void onFinish(File file, final Progress progress) { //下载完成，这里弹提示框
-            Toast.makeText(context, "下载完成:" + progress.filePath, Toast.LENGTH_SHORT).show();
+            //Toast.makeText(context, "下载完成:" + progress.filePath, Toast.LENGTH_SHORT).show();
             updateData(type);
             Log.d(TGA, "type : " + progress.priority);
-            ApkUtils.install(context.getApplicationContext(), new File(progress.filePath));
+            ApkUtils.install(context, new File(progress.filePath));
 //                Intent intent = new Intent(Intent.ACTION_VIEW);
 //                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 //                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);

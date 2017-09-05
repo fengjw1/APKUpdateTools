@@ -15,6 +15,8 @@
  */
 package com.fengjw.apkupdatetool.utils;
 
+import android.graphics.drawable.Drawable;
+
 import java.io.Serializable;
 import java.util.Random;
 
@@ -62,6 +64,15 @@ public class ApkModel implements Serializable {
     public String iconUrl;
     public int priority;
     public String description;
+    public Drawable icon;
+
+    public Drawable getIcon() {
+        return icon;
+    }
+
+    public void setIcon(Drawable icon) {
+        this.icon = icon;
+    }
 
     public String getDescription() {
         return description;
