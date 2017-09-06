@@ -222,7 +222,7 @@ public class DownloadListActivity extends BaseActivity {
 
 
 
-            checkSDCardPermission();
+            //checkSDCardPermission();
         }catch (Exception e){
             e.printStackTrace();
         }
@@ -287,8 +287,8 @@ public class DownloadListActivity extends BaseActivity {
 //        }).start();
         //String url = "http://192.168.1.14:2700/6a648/ktc/test/version.json";
         String url = "http://192.168.1.14:8800/index.php/apkapi?model=TV918&product=ktc&sdanum=SDA123456789";
-        //String url = "https://10.0.2.2/get_data.json";
         String urlTest = getUrl.getRemoteUri();
+        Log.d(TGA, "urlTest : " + urlTest);
         apks = new ArrayList<>();
         Log.d(TGA, url);
         HttpUtil.sendOKHttpResquest(url, new okhttp3.Callback(){
@@ -443,8 +443,7 @@ public class DownloadListActivity extends BaseActivity {
                     .priority(apk.priority)//
                     .extra1(apk)//
                     .save()//
-                    .register(new LogDownloadListener())//
-                    .start();
+                    .register(new LogDownloadListener());
             adapter.notifyDataSetChanged();
         }
         //jump

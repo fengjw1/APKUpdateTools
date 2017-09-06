@@ -44,7 +44,7 @@
                 android:layout_marginRight="20dp"
                 android:text="@string/download_all"
                 android:textColor="#fff"
-                android:visibility="gone"/>
+                android:visibility="visible"/>
             <Button
                 android:id="@+id/enterDownload"
                 android:layout_width="wrap_content"

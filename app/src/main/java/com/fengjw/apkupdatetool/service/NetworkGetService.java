@@ -14,7 +14,7 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.widget.Toast;
 
-import com.fengjw.apkupdatetool.DownloadListActivity;
+import com.fengjw.apkupdatetool.DownloadAllActivity;
 import com.fengjw.apkupdatetool.utils.ApkModel;
 import com.fengjw.apkupdatetool.utils.AppInfo;
 import com.fengjw.apkupdatetool.utils.AppInfoProvider;
@@ -44,6 +44,7 @@ import okhttp3.Response;
 public class NetworkGetService extends Service {
 
     private List<ApkModel> apks; //类型是ApkModel
+    private List<ApkModel> apkShows;
     private static final int GET_ALL_APP_FINISH = 1;
     private static final String TGA = "NetworkGetService";
     private final int INSTALL_REPLACE_EXISTING = 2;
@@ -92,9 +93,22 @@ public class NetworkGetService extends Service {
                     break;
                 case GET_ALL_APP_TOAST_FINFISH:
                     OkDownload.getInstance().removeAll(true);
+                    for (ApkModel apk : apkShows) { //循环体，操作所有下载按钮
+                        //这里只是演示，表示请求可以传参，怎么传都行，和okgo使用方法一样
+                        GetRequest<File> request = OkGo.<File>get(apk.url);
+                        //这里第一个参数是tag，代表下载任务的唯一标识，传任意字符串都行，需要保证唯一,我这里用url作为了tag
+                        Log.d(TGA, "task!");
+                        DownloadTask task = OkDownload.request(apk.url, request)//
+                                .priority(apk.priority)//
+                                .extra1(apk)//
+                                .save()//
+                                .register(new LogDownloadListener());
+                        Log.d(TGA, "apk 循环次数 " + i++);
+                    }
+                    Log.d(TGA, "OKDownload work!");
                     if (mINDEX.getIndex() == 2){
                         Log.d(TGA, "index jump!");
-                        Intent intent = new Intent(getApplicationContext(), DownloadListActivity.class);
+                        Intent intent = new Intent(getApplicationContext(), DownloadAllActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
                     }
@@ -166,6 +180,7 @@ public class NetworkGetService extends Service {
         String urlTest = getUrl.getRemoteUri();
         Log.d(TGA, "urlTest : " + urlTest);
         apks = new ArrayList<>();
+        apkShows = new ArrayList<>();
         Log.d(TGA, "sendRequestWithOKHttp");
         HttpUtil.sendOKHttpResquest(url, new okhttp3.Callback(){
             @Override
@@ -232,17 +247,20 @@ public class NetworkGetService extends Service {
                     String AppInfoPkgName = appInfo.getPkg_name();
                     int AppInfoverCode = appInfo.getVerCode();
 
+
+                    String name = app.getApp_name();
+                    String url = app.getApk_url();
+                    String iconUrl = app.getPic_url();
+                    String description = app.getIntroduction();
+                    Drawable icon = appInfo.getIcon();
+                    int type = app.getUpdate_type();
+                    String verName = app.getVer_name() + app.getVer_code();
+
                     //判断是否更新
                     if (httpAppPkgName.equals(AppInfoPkgName)) {
                         if (httpAppverCode > AppInfoverCode) {
                             if (httpType == 1) {
-                                String name = app.getApp_name();
-                                String url = app.getApk_url();
-                                String iconUrl = app.getPic_url();
-                                String description = app.getIntroduction();
-                                Drawable icon = appInfo.getIcon();
-                                int type = app.getUpdate_type();
-                                String verName = app.getVer_name() + app.getVer_code();
+
 //                                Log.d(TGA, "name = " + name);
 //                                Log.d(TGA, "url = " + url);
 //                                Log.d(TGA, "verCode = " + app.getVer_code());
@@ -258,7 +276,16 @@ public class NetworkGetService extends Service {
                                 apks.add(apkModel);
                             } else if (httpType == 2) {
                                 mINDEX.setIndex(2);
+                                ApkModel apkModel = new ApkModel();
+                                apkModel.name = name;
+                                apkModel.url = url;
+                                apkModel.verName = verName;
+                                apkModel.icon = icon;
+                                apkModel.priority = type;
+                                apkModel.description = description;
+                                //Log.d(TGA, "apkModel.url = " + apkModel.url);
                                 Log.d(TGA, "mINDEX : " + mINDEX.getIndex());
+                                apkShows.add(apkModel);
                             }
                         }
                     }

@@ -144,6 +144,8 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
         NumberProgressBar pbProgress;
         @Bind(R.id.start)
         Button download;
+        @Bind((R.id.restart))
+        Button redownload;
         private DownloadTask task;
         private String tag;
 
@@ -167,7 +169,7 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
                 //Glide.with(context).load(apk.iconUrl).error(R.mipmap.ic_launcher).into(icon);
                 icon.setImageDrawable(apk.getIcon());
                 name.setText(apk.name);
-                priority.setText(String.format("优先级：%s", progress.priority));
+                priority.setText(apk.getDescription());
             } else {
                 name.setText(progress.fileName);
             }
@@ -177,33 +179,45 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
             String currentSize = Formatter.formatFileSize(context, (int)progress.currentSize);
             String totalSize = Formatter.formatFileSize(context, (int)progress.totalSize);
             downloadSize.setText(currentSize + "/" + totalSize);
-            priority.setText(String.format("优先级：%s", progress.priority));
+            //priority.setText();
             switch (progress.status) {
                 case Progress.NONE:
                     netSpeed.setText("停止");
-                    download.setText("下载");
+                    download.setText("安装");
+                    download.setFocusable(false);
+                    redownload.setText("下载");
                     break;
                 case Progress.PAUSE:
                     netSpeed.setText("暂停中");
                     download.setText("继续");
+                    download.setFocusable(true);
+                    redownload.setText("重新下载");
                     break;
                 case Progress.ERROR:
                     netSpeed.setText("下载出错");
                     download.setText("出错");
+                    redownload.setText("重新下载");
                     //download.removeCallbacks(task);
                     break;
                 case Progress.WAITING:
                     netSpeed.setText("等待中");
                     download.setText("等待");
+                    download.setFocusable(true);
+                    redownload.setText("重新下载");
                     break;
                 case Progress.FINISH:
                     netSpeed.setText("下载完成");
                     download.setText("安装");
+                    download.setFocusable(true);
+                    redownload.setText("重新下载");
+                    //redownload.setFocusable(false);
                     break;
                 case Progress.LOADING:
                     String speed = Formatter.formatFileSize(context, progress.speed);
                     netSpeed.setText(String.format("%s/s", speed));
                     download.setText("暂停");
+                    download.setFocusable(true);
+                    redownload.setText("重新下载");
                     break;
             }
             tvProgress.setText(numberFormat.format(progress.fraction));
@@ -218,23 +232,15 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
                 case Progress.PAUSE:
                 case Progress.NONE:
                 case Progress.ERROR:
-                    //task.start();
+                    task.start();
                     //task.restart();
                     break;
                 case Progress.LOADING:
                     task.pause();
                     break;
                 case Progress.FINISH:
-//                    if (ApkUtils.isAvailable(context, new File(progress.filePath))) {
-//                        ApkUtils.uninstall(context, ApkUtils.getPackageName(context, progress.filePath));
-//                    } else {
-//                        ApkUtils.install(context, new File(progress.filePath));
-//                    }
-                    //ApkUtils.install(context, new File(progress.filePath));
-                    if (progress.priority == 2) {
                         ApkUtils.install(context, new File(progress.filePath));
                         Log.d(TGA, "apkUrl : " + progress.filePath);
-                    }
                     break;
             }
             refresh(progress);
@@ -291,8 +297,16 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
         public void onFinish(File file, final Progress progress) { //下载完成，这里弹提示框
             //Toast.makeText(context, "下载完成:" + progress.filePath, Toast.LENGTH_SHORT).show();
             updateData(type);
-            Log.d(TGA, "type : " + progress.priority);
-            ApkUtils.install(context, new File(progress.filePath));
+            Log.d("NetworkGetService", "onFinish 方法内部");
+            try {
+                Log.d(TGA, "type : " + progress.priority);
+                if (progress.priority == 2) {
+                    ApkUtils.install(context.getApplicationContext(), new File(progress.filePath));
+                    Log.d(TGA, "执行到这里了？");
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
 //                Intent intent = new Intent(Intent.ACTION_VIEW);
 //                intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
 //                intent.setFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
