@@ -32,6 +32,7 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.bumptech.glide.Glide;
+import com.fengjw.apkupdatetool.DownloadAllActivity;
 import com.fengjw.apkupdatetool.R;
 import com.fengjw.apkupdatetool.utils.ApkModel;
 import com.fengjw.apkupdatetool.utils.ApkUtils;
@@ -74,12 +75,19 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
     private LayoutInflater inflater;
     private Context context;
     private int type;
+    private DownloadAllActivity mDownloadAllActivity;
 
     public DownloadAdapter(Context context) {
         this.context = context;
         numberFormat = NumberFormat.getPercentInstance();
         numberFormat.setMinimumFractionDigits(2);
         inflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+    }
+
+    public DownloadAdapter(){
+        mDownloadAllActivity = new DownloadAllActivity();
+        this.context = mDownloadAllActivity;
+        //notifyDataSetChanged();
     }
 
     public void updateData(int type) {
@@ -89,6 +97,7 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
         if (type == TYPE_FINISH) values = OkDownload.restore(DownloadManager.getInstance().getFinished());
         if (type == TYPE_ING) values = OkDownload.restore(DownloadManager.getInstance().getDownloading());
         notifyDataSetChanged();//如果适配器的内容发生改变，强制调用getview刷新
+        Log.d("DownloadAllActivity", "刷新UI了吗");
     }
 
     @Override
@@ -239,7 +248,7 @@ public class DownloadAdapter extends RecyclerView.Adapter<DownloadAdapter.ViewHo
                     task.pause();
                     break;
                 case Progress.FINISH:
-                        ApkUtils.install(context, new File(progress.filePath));
+                        ApkUtils.install(context.getApplicationContext(), new File(progress.filePath));
                         Log.d(TGA, "apkUrl : " + progress.filePath);
                     break;
             }

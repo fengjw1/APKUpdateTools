@@ -37,6 +37,9 @@
     <!--用于控制toolbar溢出菜单的样式-->
     <style name="AppTheme.PopupOverlay" parent="ThemeOverlay.AppCompat.Light"/>
 
-
+    <style name="AppTheme.Dialog" parent="Theme.AppCompat.DayNight.Dialog">
+        <item name="android:windowBackground">@drawable/float_box</item>
+        <item name="android:windowIsTranslucent">true</item>
+    </style>
 
 </resources>

@@ -15,19 +15,26 @@
  */
 package com.fengjw.apkupdatetool;
 
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 
 import com.fengjw.apkupdatetool.Adapter.DownloadAdapter;
 import com.lzy.okserver.OkDownload;
+import com.lzy.okserver.download.DownloadTask;
 import com.lzy.okserver.task.XExecutor;
 
 import butterknife.Bind;
 import butterknife.OnClick;
-
 
 public class DownloadAllActivity extends BaseActivity implements XExecutor.OnAllTaskEndListener {
 
@@ -35,15 +42,60 @@ public class DownloadAllActivity extends BaseActivity implements XExecutor.OnAll
 //    Toolbar toolbar;
     @Bind(R.id.recyclerView) RecyclerView recyclerView;
 
+    private final static String TGA = "DownloadAllActivity";
+
     private DownloadAdapter adapter;
     private OkDownload okDownload;
+
+
+    public final static int INSTALL_APK = 1;
+    private static Context mContext;
+    public String packageName;
+    public DownloadTask mTask;
+    private InstallAPKReceiver mReceiver = null;
+
+
+    public Handler InstallHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what){
+                case INSTALL_APK:
+                    try {
+                        if (mReceiver != null){
+                            unregisterReceiver(mReceiver);
+                            mReceiver = null;
+                        }
+                        okDownload = OkDownload.getInstance();
+                        mTask = okDownload.getTask(packageName);
+                        Log.d(TGA, "mTask!");
+                        mTask.remove(true);
+                        Log.d(TGA, "mTask remove!");
+                        adapter.updateData(0);
+                        adapter.notifyDataSetChanged();
+                        Log.d(TGA, "mAdapter!");
+                    }catch(Exception e){
+                        Log.d(TGA, "INSTALL_APK Execption!");
+                        e.printStackTrace();
+                    }finally {
+                        if (mReceiver != null){
+                            unregisterReceiver(mReceiver);
+                            mReceiver = null;
+                        }
+                    }
+                    break;
+                default:
+                    break;
+            }
+        }
+    };
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_download_all);
        //initToolBar(toolbar, true, "所有任务");
-
+        mContext = DownloadAllActivity.this;
         okDownload = OkDownload.getInstance();
         //okDownload.removeAll(true);
         adapter = new DownloadAdapter(this);
@@ -52,11 +104,23 @@ public class DownloadAllActivity extends BaseActivity implements XExecutor.OnAll
         //recyclerView.requestFocus();
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
         recyclerView.setAdapter(adapter);
-
         okDownload.addOnAllTaskEndListener(this);
 
     }
 
+    @Override
+    protected void onStart() {
+        super.onStart();
+        //adapter.notifyDataSetChanged();
+        //注册动态广播
+        mReceiver = new InstallAPKReceiver();
+        IntentFilter filter = new IntentFilter();
+        filter.addAction("android.intent.action.PACKAGE_REPLACED");
+        filter.addDataScheme("package");
+        this.registerReceiver(mReceiver, filter);
+        Log.d(TGA, "onStart Receiver register!");
+        adapter.notifyDataSetChanged();
+    }
 
     //back keyboard
     @Override
@@ -72,22 +136,30 @@ public class DownloadAllActivity extends BaseActivity implements XExecutor.OnAll
 
     @Override
     public void onAllTaskEnd() {
-        showToast("所有下载任务已结束");
+        //showToast("所有下载任务已结束");
     }
 
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        if (mReceiver != null){
+            unregisterReceiver(mReceiver);
+            mReceiver = null;
+        }
         okDownload.removeOnAllTaskEndListener(this);
         adapter.unRegister();
-        //finish();
+        finish();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        adapter.notifyDataSetChanged();
         //finish();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
     }
 
     @OnClick(R.id.removeAll)
@@ -107,4 +179,37 @@ public class DownloadAllActivity extends BaseActivity implements XExecutor.OnAll
     public void startAll(View view) {
         okDownload.startAll();
     }
+
+
+    public class InstallAPKReceiver extends BroadcastReceiver{
+
+        private OkDownload mOkDownload;
+
+        public InstallAPKReceiver(){
+            //this.mOkDownload = okDownload;
+            mOkDownload = OkDownload.getInstance();
+            Log.d(TGA, "InstallAPKReceiver()");
+        }
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            try {
+                if (intent.getAction().equals("android.intent.action.PACKAGE_REPLACED")){
+                    Log.d(TGA, "Name : " + intent.getDataString());
+                    if (mOkDownload.hasTask(intent.getDataString())){
+                        packageName = intent.getDataString();
+                        Log.d(TGA, "packageName = " + packageName);
+                        InstallHandler.sendEmptyMessage(INSTALL_APK);
+                        Log.d(TGA, "Handler!");
+                    }else {
+                        if (mReceiver != null)
+                        unregisterReceiver(mReceiver);
+                    }
+                }
+            }catch (Exception e){
+                e.printStackTrace();
+            }
+        }
+    }
+
 }

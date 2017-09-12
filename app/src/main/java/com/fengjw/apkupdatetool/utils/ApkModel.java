@@ -65,6 +65,15 @@ public class ApkModel implements Serializable {
     public int priority;
     public String description;
     public Drawable icon;
+    public String pkgName;
+
+    public String getPkgName() {
+        return pkgName;
+    }
+
+    public void setPkgName(String pkgName) {
+        this.pkgName = pkgName;
+    }
 
     public Drawable getIcon() {
         return icon;

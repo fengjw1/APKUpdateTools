@@ -15,6 +15,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 import com.fengjw.apkupdatetool.DownloadAllActivity;
+import com.fengjw.apkupdatetool.PushDialogActivity;
 import com.fengjw.apkupdatetool.utils.ApkModel;
 import com.fengjw.apkupdatetool.utils.AppInfo;
 import com.fengjw.apkupdatetool.utils.AppInfoProvider;
@@ -74,18 +75,6 @@ public class NetworkGetService extends Service {
                                 .register(new LogDownloadListener());//
                         task.start();
                         task.register(new ListDownloadListener(task, apk.url));
-//                        Progress progress = task.progress;
-//                        String apkPath = progress.filePath;
-//                        String apkName = progress.fileName;
-//                        int apkState = progress.status;
-//                        Log.d(TGA, "apkPath : " + apkPath);
-//                        //Toast.makeText(NetworkGetService.this, apkPath, Toast.LENGTH_SHORT).show();
-//                        ApkPath apkPath1 = new ApkPath();
-//                        apkPath1.apkname = apkName;
-//                        apkPath1.apkpath = apkPath;
-//                        apkPath1.apkState = apkState;
-//                        apkPaths.add(apkPath1);
-                        //task.remove(true);                                L
                         Log.d(TGA, "apk 循环次数 " + i++);
                     }
                     Log.d(TGA, "OKDownload work!");
@@ -98,7 +87,7 @@ public class NetworkGetService extends Service {
                         GetRequest<File> request = OkGo.<File>get(apk.url);
                         //这里第一个参数是tag，代表下载任务的唯一标识，传任意字符串都行，需要保证唯一,我这里用url作为了tag
                         Log.d(TGA, "task!");
-                        DownloadTask task = OkDownload.request(apk.url, request)//
+                        DownloadTask task = OkDownload.request("package:" + apk.pkgName, request)//
                                 .priority(apk.priority)//
                                 .extra1(apk)//
                                 .save()//
@@ -106,9 +95,15 @@ public class NetworkGetService extends Service {
                         Log.d(TGA, "apk 循环次数 " + i++);
                     }
                     Log.d(TGA, "OKDownload work!");
-                    if (mINDEX.getIndex() == 2){
+//                    if (mINDEX.getIndex() == 2){
+//                        Log.d(TGA, "index jump!");
+//                        Intent intent = new Intent(getApplicationContext(), DownloadAllActivity.class);
+//                        intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+//                        startActivity(intent);
+//                    }
+                    if (mINDEX.getIndex() == 2) {
                         Log.d(TGA, "index jump!");
-                        Intent intent = new Intent(getApplicationContext(), DownloadAllActivity.class);
+                        Intent intent = new Intent(getApplicationContext(), PushDialogActivity.class);
                         intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
                         startActivity(intent);
                     }
@@ -249,6 +244,7 @@ public class NetworkGetService extends Service {
 
 
                     String name = app.getApp_name();
+                    String pkgName = app.getPkg_name();
                     String url = app.getApk_url();
                     String iconUrl = app.getPic_url();
                     String description = app.getIntroduction();
@@ -261,12 +257,13 @@ public class NetworkGetService extends Service {
                         if (httpAppverCode > AppInfoverCode) {
                             if (httpType == 1) {
 
-//                                Log.d(TGA, "name = " + name);
-//                                Log.d(TGA, "url = " + url);
-//                                Log.d(TGA, "verCode = " + app.getVer_code());
-//                                Log.d(TGA, "type = " + app.getUpdate_type());
+                                Log.d(TGA, "name = " + name);
+                                Log.d(TGA, "url = " + url);
+                                Log.d(TGA, "verCode = " + app.getVer_code());
+                                Log.d(TGA, "type = " + app.getUpdate_type());
                                 ApkModel apkModel = new ApkModel();
                                 apkModel.name = name;
+                                apkModel.pkgName = pkgName;
                                 apkModel.url = url;
                                 apkModel.verName = verName;
                                 apkModel.icon = icon;
@@ -278,6 +275,7 @@ public class NetworkGetService extends Service {
                                 mINDEX.setIndex(2);
                                 ApkModel apkModel = new ApkModel();
                                 apkModel.name = name;
+                                apkModel.pkgName = pkgName;
                                 apkModel.url = url;
                                 apkModel.verName = verName;
                                 apkModel.icon = icon;
@@ -362,10 +360,10 @@ public class NetworkGetService extends Service {
         public void packageInstalled(String packageName, int returnCode) throws RemoteException {
             if (returnCode == 1) //返回1表示安装成功，否则安装失败
             {
-                Toast.makeText(NetworkGetService.this, "安装成功！", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(NetworkGetService.this, "安装成功！", Toast.LENGTH_SHORT).show();
                 Log.e(TGA, "packageName=" + packageName + ",returnCode=" + returnCode);
             } else {
-                Toast.makeText(NetworkGetService.this, "安装失败！", Toast.LENGTH_SHORT).show();
+                //Toast.makeText(NetworkGetService.this, "安装失败！", Toast.LENGTH_SHORT).show();
                 Log.d(TGA, "安装失败！");
             }
         }
