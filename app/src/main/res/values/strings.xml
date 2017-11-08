@@ -14,7 +14,7 @@
     limitations under the License.
 -->
 <resources>
-    <string name="app_name">应用升级管理器</string>
+    <string name="app_name">TV助手</string>
 
     <string name="simple_view_behavior">com.lzy.demo.ui.SimpleViewBehavior</string>
     <string name="translate_up_down_behavior">com.lzy.demo.ui.TranslateUpDownBehavior</string>

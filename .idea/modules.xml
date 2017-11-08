@@ -4,6 +4,7 @@
     <modules>
       <module fileurl="file://$PROJECT_DIR$/apkupdatetool.iml" filepath="$PROJECT_DIR$/apkupdatetool.iml" />
       <module fileurl="file://$PROJECT_DIR$/app/app.iml" filepath="$PROJECT_DIR$/app/app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/updatetool.iml" filepath="$PROJECT_DIR$/updatetool.iml" />
     </modules>
   </component>
 </project>

@@ -27,6 +27,7 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
+import android.view.Window;
 
 import com.fengjw.apkupdatetool.Adapter.DownloadAdapter;
 import com.lzy.okserver.OkDownload;
@@ -93,6 +94,7 @@ public class DownloadAllActivity extends BaseActivity implements XExecutor.OnAll
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //requestWindowFeature(Window.FEATURE_NO_TITLE);
         setContentView(R.layout.activity_download_all);
        //initToolBar(toolbar, true, "所有任务");
         mContext = DownloadAllActivity.this;
