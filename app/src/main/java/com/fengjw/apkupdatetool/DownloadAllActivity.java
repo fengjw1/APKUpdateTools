@@ -128,8 +128,6 @@ public class DownloadAllActivity extends BaseActivity implements XExecutor.OnAll
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
         if (keyCode==KeyEvent.KEYCODE_BACK){
-//            Intent intent = new Intent(DownloadAllActivity.this,DownloadListActivity.class);
-//            startActivity(intent);
             finish();
             return false;
         }

@@ -35,14 +35,6 @@
             </intent-filter>
         </activity>
         <activity
-            android:name=".DesActivity"
-            android:theme="@style/AppTheme.NoActionBar"/>
-        <!--<activity-->
-            <!--android:name=".DownloadListActivity"-->
-            <!--android:launchMode="singleInstance"-->
-            <!--android:theme="@style/AppTheme"/>-->
-        <!--<activity android:name=".MainActivity"/>-->
-        <activity
             android:name=".PushDialogActivity"
             android:excludeFromRecents="true"
             android:theme="@style/AppTheme.Dialog"/>
@@ -59,13 +51,7 @@
                 <category android:name="android.intent.category.HOME"/>
             </intent-filter>
         </receiver>
-        <!--<receiver android:name=".service.BootInstallReceiver">-->
-            <!--<intent-filter>-->
-                <!--<action android:name="android.intent.action.PACKAGE_REPLACED"/>-->
 
-                <!--<data android:scheme="package"/>-->
-            <!--</intent-filter>-->
-        <!--</receiver>-->
 
         <!--<receiver android:name=".DownloadAllActivity$InstallAPKReceiver">-->
             <!--<intent-filter>-->
