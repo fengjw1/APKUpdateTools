@@ -25,6 +25,8 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".DownloadAllActivity"
+            android:excludeFromRecents="true"
+            android:label="更新应用"
             android:launchMode="standard">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN"/>
@@ -35,13 +37,14 @@
         <activity
             android:name=".DesActivity"
             android:theme="@style/AppTheme.NoActionBar"/>
-        <activity
-            android:name=".DownloadListActivity"
-            android:launchMode="singleInstance"
-            android:theme="@style/AppTheme"/>
-        <activity android:name=".MainActivity"/>
+        <!--<activity-->
+            <!--android:name=".DownloadListActivity"-->
+            <!--android:launchMode="singleInstance"-->
+            <!--android:theme="@style/AppTheme"/>-->
+        <!--<activity android:name=".MainActivity"/>-->
         <activity
             android:name=".PushDialogActivity"
+            android:excludeFromRecents="true"
             android:theme="@style/AppTheme.Dialog"/>
 
         <receiver android:name=".service.NetworkStateReceiver">

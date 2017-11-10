@@ -564,7 +564,6 @@ public class DownloadListActivity extends BaseActivity {
 
             //v.setFocusable(true);
             Intent intent = new Intent(getApplicationContext(), DownloadAllActivity.class);
-            //Intent intent = new Intent(DownloadListActivity.this, DesActivity.class);
             intent.putExtra("apk", apk);
             startActivity(intent);
         }
